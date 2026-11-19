@@ -6,7 +6,7 @@
 <title>Browny Listening</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap">
 <style>
 /* Same visual system as Browny: honey-milk ground, brownie bear accent, mint = correct, coral = wrong. */
 :root {
@@ -15,7 +15,7 @@
   --honey: #F2B654; --mint: #4FB98F; --mint-soft: #E2F5EC; --coral: #E9705E; --coral-soft: #FCE8E4;
   --sky: #3E7CC0; --sky-soft: #DCEBFA;
   --bear: #8A5636; --bear-light: #C08A63; --muzzle: #E9C9A8; --blush: #F49A8E;
-  --font-display: "Fredoka", "Nunito", ui-rounded, system-ui, sans-serif;
+  --font-display: "Baloo 2", "Nunito", ui-rounded, system-ui, sans-serif;
   --font-body: "Nunito", ui-rounded, system-ui, -apple-system, "Segoe UI", sans-serif;
   color-scheme: light;
 }
@@ -350,7 +350,7 @@ textarea { width: 100%; min-height: 110px; padding: 12px; border-radius: 16px; b
           const r = S.results[c.id], k = keyFor(c.id), d = S.drafts[c.id];
           const answered = d ? d.answers.filter(Boolean).length : 0;
           return `<button class="clip ${r ? 'done' : ''}" data-id="${c.id}">
-            <span class="num">${CLIPS.length - i}</span>
+            <span class="num">${(c.title.match(/\d+/) || ['1'])[0]}</span>
             <span><b>${esc(c.title)}</b><small>${fmtDate(c.date)} · ${fmt(c.dur)}</small><br>
               ${k ? '<span class="pill key">Đã có đáp án</span>' : '<span class="pill nokey">Chưa có đáp án</span>'}
               ${!r && answered ? `<span class="pill draft">Đang làm ${answered}/50</span>` : ''}</span>
