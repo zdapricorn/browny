@@ -6,9 +6,9 @@
  * - Font Google được lưu lại khi tải lần đầu. Clip YouTube không lưu được nên phần Luyện nghe vẫn cần mạng.
  * Đổi VERSION mỗi khi đổi danh sách file để xoá bộ đệm cũ.
  */
-const VERSION = 'browny-v1';
+const VERSION = 'browny-v2';
 const CORE = [
-  './', 'index.html', 'questions.js', 'rewards.js',
+  './', 'index.html', 'questions.js', 'rewards.js', 'sound.js',
   'listening.html', 'reading.html', 'reading-data.js', 'vocab.html', 'vocab-data.js',
   'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'favicon-32.png',
 ];

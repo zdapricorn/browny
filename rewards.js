@@ -162,10 +162,12 @@
   }
 
   /* ---------- Public API ---------- */
+  const sfx = name => { try { window.BrownySound && BrownySound.play(name); } catch (e) {} };
   function answer(ok) {
+    sfx(ok ? 'correct' : 'wrong');
     if (ok) {
       S.combo++; S.bestCombo = Math.max(S.bestCombo, S.combo);
-      if ([3, 5, 10, 15, 20].includes(S.combo)) toast(fill(pick(NIE.combo), S.combo), 'bolt', '#D99A35');
+      if ([3, 5, 10, 15, 20].includes(S.combo)) { setTimeout(() => sfx('combo'), 350); toast(fill(pick(NIE.combo), S.combo), 'bolt', '#D99A35'); }
     } else {
       if (S.combo >= 3) toast(pick(['Không sao đâu mẹ, mình làm tiếp nha!', 'Mẹ ơi cố lên!']));
       S.combo = 0;
@@ -200,6 +202,8 @@
     </div>`;
     document.body.appendChild(ov);
     if (tier === 'perfect' || tier === 'good' || fresh.length) confetti();
+    sfx(tier === 'low' || tier === 'ok' ? 'soft' : 'celebrate');
+    if (fresh.length) setTimeout(() => sfx('badge'), 1300);
     hearts(tier === 'low' ? 6 : 12);
     const close = () => { ov.remove(); if (onClose) onClose(); };
     ov.querySelector('#bwClose').onclick = close;

@@ -177,6 +177,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; text
 <body>
 <div id="app"></div>
 <div class="toast" id="toast"></div>
+<script src="sound.js"></script>
 <script src="rewards.js"></script>
 <script src="vocab-data.js" charset="utf-8"></script>
 <script>
@@ -312,7 +313,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; text
       <button class="btn ghost" id="flipBtn">Lật thẻ</button>
     </div>`;
     const fc = $('#fc');
-    const flip = () => { fc.classList.toggle('flip'); if (fc.classList.contains('flip')) { $('#rate').hidden = false; $('#flipBtn').hidden = true; } };
+    const flip = () => { window.BrownySound && BrownySound.play('flip'); fc.classList.toggle('flip'); if (fc.classList.contains('flip')) { $('#rate').hidden = false; $('#flipBtn').hidden = true; } };
     fc.onclick = e => { if (e.target.closest('.speak')) return; flip(); };
     $('#flipBtn').onclick = flip;
     $('#spk').onclick = () => speak(c.word); $('#spk2').onclick = () => speak(c.ex || c.word);
