@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Browny Listening</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap">
+<style>
+/* Same visual system as Browny: honey-milk ground, brownie bear accent, mint = correct, coral = wrong. */
+:root {
+  --bg: #FBF7F4; --surface: #FFFFFF; --surface-2: #F3ECE6; --line: #E8DDD4;
+  --fg: #3B2A21; --fg-soft: #87736A; --brown: #7B4B2E; --brown-deep: #5A3420;
+  --honey: #F2B654; --mint: #4FB98F; --mint-soft: #E2F5EC; --coral: #E9705E; --coral-soft: #FCE8E4;
+  --sky: #3E7CC0; --sky-soft: #DCEBFA;
+  --bear: #8A5636; --bear-light: #C08A63; --muzzle: #E9C9A8; --blush: #F49A8E;
+  --font-display: "Fredoka", "Nunito", ui-rounded, system-ui, sans-serif;
+  --font-body: "Nunito", ui-rounded, system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1E1814; --surface: #2A221D; --surface-2: #352B25; --line: #46392F;
+    --fg: #F5EAE2; --fg-soft: #B5A398; --brown: #D9A07A; --brown-deep: #F0C3A2;
+    --mint: #5FCB9F; --mint-soft: #1F3A2F; --coral: #F08472; --coral-soft: #452722;
+    --sky: #8DBDF0; --sky-soft: #1E2F42; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1E1814; --surface: #2A221D; --surface-2: #352B25; --line: #46392F;
+  --fg: #F5EAE2; --fg-soft: #B5A398; --brown: #D9A07A; --brown-deep: #F0C3A2;
+  --mint: #5FCB9F; --mint-soft: #1F3A2F; --coral: #F08472; --coral-soft: #452722;
+  --sky: #8DBDF0; --sky-soft: #1E2F42; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; border: 0; background: none; }
+button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--honey); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; text-wrap: balance; }
+[hidden] { display: none !important; }
+#app {
+  max-width: 560px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: calc(14px + env(safe-area-inset-top, 0px)) calc(40px + env(safe-area-inset-bottom, 0px));
+  display: flex; flex-direction: column; gap: 16px;
+}
+.screen { display: flex; flex-direction: column; gap: 16px; animation: in .3s cubic-bezier(.2,.9,.3,1.2) both; }
+@keyframes in { from { opacity: 0; transform: translateY(10px); } }
+
+/* Bear */
+.bear .eyes-happy { display: none; }
+.bear[data-mood="happy"] .eyes-open { display: none; }
+.bear[data-mood="happy"] .eyes-happy { display: inline; }
+.bear .eyes-open { transform-box: fill-box; transform-origin: center; animation: blink 4.2s infinite; }
+@keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+.bear .body-all { transform-box: fill-box; transform-origin: 50% 100%; animation: breathe 3.2s ease-in-out infinite; }
+@keyframes breathe { 50% { transform: scale(1.025, .985); } }
+.bear[data-mood="happy"] .body-all { animation: sway 1.4s ease-in-out infinite; }
+@keyframes sway { 50% { transform: rotate(-4deg) translateY(-4px); } }
+.bear .phones { transform-box: fill-box; transform-origin: center; }
+
+/* Header */
+.top { display: flex; align-items: center; gap: 10px; }
+.top .back { display: inline-flex; align-items: center; gap: 4px; padding: 8px 10px; border-radius: 12px; font-weight: 800; color: var(--fg-soft); text-decoration: none; }
+.top .back:hover { background: var(--surface-2); }
+.top h1 { font-size: 22px; color: var(--brown); flex: 1; min-width: 0; }
+.hero { display: grid; grid-template-columns: 96px 1fr; gap: 12px; align-items: end; padding: 14px 16px 0; background: var(--surface); border: 2px solid var(--line); border-radius: 22px; overflow: hidden; }
+.hero svg { width: 96px; height: 106px; display: block; }
+.bubble { align-self: center; background: var(--surface-2); border-radius: 16px; padding: 10px 12px; font-weight: 700; font-size: 14.5px; margin-bottom: 14px; min-width: 0; }
+.notice { padding: 12px 14px; border-radius: 16px; background: var(--sky-soft); color: var(--fg); font-weight: 600; font-size: 14px; }
+.notice.warn { background: var(--coral-soft); }
+.label { font-size: 12px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: var(--fg-soft); }
+
+/* List */
+.list { display: flex; flex-direction: column; gap: 10px; }
+.clip { display: grid; grid-template-columns: 52px 1fr auto; gap: 12px; align-items: center; text-align: left; padding: 12px 14px; border-radius: 18px; background: var(--surface); border: 2px solid var(--line); box-shadow: 0 4px 0 var(--line); transition: transform .08s; }
+.clip:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+.clip .num { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: var(--sky-soft); color: var(--sky); font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+.clip.done .num { background: var(--mint-soft); color: var(--mint); }
+.clip b { display: block; font-size: 15.5px; }
+.clip small { color: var(--fg-soft); font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; }
+.clip .tail { text-align: right; font-weight: 800; font-size: 13px; color: var(--fg-soft); font-variant-numeric: tabular-nums; }
+.clip .tail strong { display: block; font-family: var(--font-display); font-size: 20px; color: var(--brown); }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 800; }
+.pill.key { background: var(--mint-soft); color: var(--mint); }
+.pill.nokey { background: var(--surface-2); color: var(--fg-soft); }
+.pill.draft { background: #FBEBCB; color: #9A6A12; }
+
+/* Player */
+.player-card { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); padding-block: 6px 8px; display: flex; flex-direction: column; gap: 10px; }
+.video-row { display: grid; grid-template-columns: minmax(200px, 300px) 1fr; gap: 12px; align-items: stretch; }
+.video { position: relative; width: 100%; min-width: 200px; height: 200px; border-radius: 16px; overflow: hidden; background: #000; }
+.video iframe, .video #yt { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.side { display: flex; flex-direction: column; justify-content: center; gap: 6px; min-width: 0; }
+.side .t { font-family: var(--font-display); font-size: 30px; font-weight: 700; color: var(--brown); font-variant-numeric: tabular-nums; line-height: 1; }
+.side .d { font-weight: 700; color: var(--fg-soft); font-size: 13px; font-variant-numeric: tabular-nums; }
+.side .answered { font-weight: 800; font-size: 13px; color: var(--fg); }
+.scrub { width: 100%; accent-color: var(--brown); height: 22px; }
+.controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ctl { display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 46px; min-width: 46px; padding: 0 12px; border-radius: 14px; background: var(--surface); border: 2px solid var(--line); box-shadow: 0 3px 0 var(--line); font-weight: 800; font-size: 14px; }
+.ctl:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--line); }
+.ctl svg { width: 22px; height: 22px; }
+.ctl.play { background: var(--brown); border-color: var(--brown); color: #FFF8F2; box-shadow: 0 3px 0 var(--brown-deep); min-width: 64px; }
+.vol { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; color: var(--fg-soft); }
+.vol input { width: 96px; accent-color: var(--brown); }
+
+/* Tabs */
+.tabs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; padding: 4px; background: var(--surface-2); border-radius: 14px; }
+.tabs button { padding: 8px 6px; border-radius: 10px; font-weight: 800; font-size: 13.5px; color: var(--fg-soft); }
+.tabs button.on { background: var(--surface); color: var(--brown); box-shadow: 0 2px 0 var(--line); }
+
+/* Answer sheet */
+.part { display: flex; flex-direction: column; gap: 6px; }
+.part h3 { font-size: 16px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.part h3 span { font-family: var(--font-body); font-size: 12.5px; font-weight: 700; color: var(--fg-soft); }
+.row { display: grid; grid-template-columns: 34px repeat(4, 1fr) 38px; gap: 6px; align-items: center; padding: 4px 0; border-bottom: 1px dashed var(--line); }
+.row .n { font-weight: 800; color: var(--fg-soft); font-variant-numeric: tabular-nums; text-align: right; padding-right: 2px; }
+.ch { height: 40px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); font-family: var(--font-display); font-weight: 600; color: var(--fg-soft); transition: transform .1s, background .15s; }
+.ch:hover { border-color: var(--bear-light); }
+.ch.on { background: var(--brown); border-color: var(--brown); color: #FFF8F2; animation: pick .25s cubic-bezier(.3,1.8,.5,1); }
+@keyframes pick { 50% { transform: scale(1.12); } }
+.ch.right { background: var(--mint); border-color: var(--mint); color: #fff; }
+.ch.wrong { background: var(--coral); border-color: var(--coral); color: #fff; }
+.ch.should { border-color: var(--mint); color: var(--mint); border-style: dashed; }
+.flag { height: 40px; border-radius: 12px; color: var(--line); display: grid; place-items: center; }
+.flag svg { width: 20px; height: 20px; }
+.flag.on { color: var(--honey); }
+
+/* Key */
+textarea { width: 100%; min-height: 110px; padding: 12px; border-radius: 16px; border: 2px solid var(--line); background: var(--surface); font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 15px; letter-spacing: 1px; resize: vertical; }
+.keyinfo { font-weight: 700; font-size: 14px; color: var(--fg-soft); font-variant-numeric: tabular-nums; }
+.keyinfo.ok { color: var(--mint); }
+.keyinfo.bad { color: var(--coral); }
+.btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px 18px; border-radius: 16px; font-weight: 800; font-size: 16px; background: var(--brown); color: #FFF8F2; box-shadow: 0 5px 0 var(--brown-deep); }
+.btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--brown-deep); }
+.btn.ghost { background: var(--surface); color: var(--fg); border: 2px solid var(--line); box-shadow: 0 5px 0 var(--line); }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn:not(.ghost), :root:not([data-theme="light"]) .ctl.play, :root:not([data-theme="light"]) .ch.on { color: #2A1A10; } }
+:root[data-theme="dark"] .btn:not(.ghost), :root[data-theme="dark"] .ctl.play, :root[data-theme="dark"] .ch.on { color: #2A1A10; }
+
+/* Result */
+.score-box { display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; padding: 14px 16px; border-radius: 20px; background: var(--surface); border: 2px solid var(--line); }
+.score-box svg { width: 110px; height: 120px; }
+.big { font-family: var(--font-display); font-size: 46px; font-weight: 700; color: var(--brown); line-height: 1; font-variant-numeric: tabular-nums; }
+.bars { display: flex; flex-direction: column; gap: 8px; }
+.bar { display: grid; grid-template-columns: 64px 1fr 52px; gap: 8px; align-items: center; font-weight: 800; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.bar .track { height: 12px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.bar .fill { height: 100%; background: var(--mint); border-radius: 999px; width: 0; transition: width .9s cubic-bezier(.2,.9,.3,1.1); }
+.wrongs { display: flex; flex-direction: column; gap: 8px; }
+.wr { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 14px; background: var(--surface); border: 2px solid var(--line); font-weight: 700; font-size: 14px; }
+.wr .q { font-family: var(--font-display); color: var(--coral); font-size: 18px; text-align: center; }
+.wr button { padding: 6px 10px; border-radius: 10px; background: var(--sky-soft); color: var(--sky); font-weight: 800; font-size: 13px; white-space: nowrap; }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); opacity: 0; background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 14px; font-weight: 800; font-size: 14px; transition: .25s; pointer-events: none; z-index: 50; max-width: calc(100% - 32px); text-align: center; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+@media (max-width: 520px) {
+  .video-row { grid-template-columns: 1fr; }
+  .side { flex-direction: row; align-items: baseline; justify-content: space-between; flex-wrap: wrap; }
+  .side .t { font-size: 24px; }
+  .vol input { width: 80px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  /* Clips from the playlist "Toefl ITP Listening Tests" (English Test Exercises), newest first.
+     Only titles, dates and links are stored here; test content stays on YouTube. */
+  const CLIPS = [
+    ['AF4q4igCNoQ', 'Practice Test 25', '2026-07-06', 1701],
+    ['8X8IVFpnT-0', 'Practice Test 24', '2026-05-28', 1723],
+    ['z9oZIgkbYwg', 'Test 23', '2026-04-29', 1658],
+    ['1C1K3MMzLsk', 'Practice Test 22', '2026-03-11', 1659],
+    ['DUmIVy1nEdc', 'Test 21 (YouTube ghi "Test 20")', '2025-12-05', 1553],
+    ['o8gx3Fp_rYE', 'Test 20', '2025-11-14', 1602],
+    ['anIC7A9560s', 'Test 19', '2025-10-22', 1631],
+    ['nYilXytZcgU', 'Test 18', '2025-10-03', 1581],
+    ['EpQQ72DL7uk', 'Test 17', '2025-09-17', 1727],
+    ['hwAvR3nKQGw', 'Test 16', '2025-09-03', 1414],
+    ['gX2km7JCmt0', 'Test 15', '2025-08-20', 1883],
+    ['G8REuwrLZCE', 'Test 14', '2025-08-06', 1879],
+    ['0nchWVCVleI', 'Test 13', '2025-07-24', 1815],
+    ['Mwein9FQ-Y4', 'Test 12', '2025-07-08', 1526],
+    ['BTfPEme-y6c', 'Practice Test 11', '2024-10-19', 1524],
+    ['fEZSnYpKhBE', 'Test 10 (đề cũ 1999)', '2023-03-10', 1557],
+    ['Ngacvhi0cwQ', 'Test 9', '2023-01-06', 1416],
+    ['iPwvIqtTgNA', 'Test 8', '2022-02-03', 1795],
+    ['L_yJOy3Anto', 'Test 7', '2022-01-30', 1718],
+    ['cJNuGvTzKqI', 'Test 6', '2019-05-23', 1543],
+    ['7xgRkdiSKt0', 'Test 5', '2017-12-01', 1648],
+    ['MM0plhKxzmA', 'Test 4', '2017-06-05', 1702],
+    ['n9lZs7OSsXE', 'Test 3', '2017-05-19', 1760],
+    ['pQGDN8-pw18', 'Full TOEFL ITP/PBT Listening Test', '2015-05-09', 1508],
+  ].map(([id, title, date, dur]) => ({ id, title, date, dur }));
+  const PARTS = [
+    { name: 'Part A', desc: 'Hội thoại ngắn', from: 1, to: 30 },
+    { name: 'Part B', desc: 'Hội thoại dài', from: 31, to: 38 },
+    { name: 'Part C', desc: 'Bài giảng', from: 39, to: 50 },
+  ];
+  const N = 50;
+
+  /* ---------- Storage (per device) ---------- */
+  const KEY = 'browny-listening-v1';
+  let S = { keys: {}, drafts: {}, results: {} };
+  try { const raw = localStorage.getItem(KEY); if (raw) S = { ...S, ...JSON.parse(raw) }; } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+  /* ---------- Helpers ---------- */
+  const $ = s => document.querySelector(s);
+  const app = $('#app');
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const fmt = sec => { sec = Math.max(0, Math.floor(sec || 0)); return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`; };
+  const fmtDate = d => d.split('-').reverse().join('/');
+  let toastT;
+  const toast = m => { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1900); };
+  const emptyDraft = () => ({ answers: Array(N).fill(null), flags: Array(N).fill(false), times: Array(N).fill(null) });
+  // Rough linear mapping onto the Listening scale (31–68), not ETS's official conversion table.
+  const estimate = correct => Math.round(31 + 37 * correct / N);
+
+  function bear(mood = 'idle') {
+    return `<svg class="bear" data-mood="${mood}" viewBox="0 0 200 220" role="img" aria-label="Gấu Browny đeo tai nghe">
+      <g class="body-all">
+        <ellipse cx="100" cy="196" rx="54" ry="30" fill="var(--bear)"/>
+        <ellipse cx="100" cy="200" rx="30" ry="18" fill="var(--muzzle)" opacity=".7"/>
+        <circle cx="50" cy="52" r="27" fill="var(--bear)"/><circle cx="50" cy="54" r="14" fill="var(--bear-light)"/>
+        <circle cx="150" cy="52" r="27" fill="var(--bear)"/><circle cx="150" cy="54" r="14" fill="var(--bear-light)"/>
+        <ellipse cx="100" cy="104" rx="74" ry="68" fill="var(--bear)"/>
+        <g class="phones"><path d="M34 104 Q34 26 100 26 Q166 26 166 104" fill="none" stroke="#3E7CC0" stroke-width="9" stroke-linecap="round"/>
+          <rect x="22" y="92" width="24" height="38" rx="10" fill="#3E7CC0"/><rect x="154" y="92" width="24" height="38" rx="10" fill="#3E7CC0"/></g>
+        <ellipse cx="100" cy="134" rx="33" ry="25" fill="var(--muzzle)"/>
+        <ellipse cx="62" cy="126" rx="10" ry="6" fill="var(--blush)" opacity=".55"/>
+        <ellipse cx="138" cy="126" rx="10" ry="6" fill="var(--blush)" opacity=".55"/>
+        <g class="eyes-open"><ellipse cx="74" cy="100" rx="7.5" ry="9.5" fill="#2B1A12"/><circle cx="76.5" cy="96.5" r="2.8" fill="#fff"/>
+          <ellipse cx="126" cy="100" rx="7.5" ry="9.5" fill="#2B1A12"/><circle cx="128.5" cy="96.5" r="2.8" fill="#fff"/></g>
+        <g class="eyes-happy" fill="none" stroke="#2B1A12" stroke-width="4.5" stroke-linecap="round"><path d="M65 103 Q74 91 83 103"/><path d="M117 103 Q126 91 135 103"/></g>
+        <ellipse cx="100" cy="123" rx="10" ry="7" fill="#2B1A12"/>
+        <path d="M90 135 Q100 144 110 135" fill="none" stroke="#2B1A12" stroke-width="3.5" stroke-linecap="round"/>
+      </g></svg>`;
+  }
+  const ICON = {
+    back: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+    play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10-6.5a1 1 0 0 0 0-1.7l-10-6.5A1 1 0 0 0 8 5.5z"/></svg>',
+    pause: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4.5" height="14" rx="1.5"/><rect x="13.5" y="5" width="4.5" height="14" rx="1.5"/></svg>',
+    vol: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/></svg>',
+    flag: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h2v18H6zM8 4h10l-2.5 4L18 12H8z"/></svg>',
+  };
+
+  /* ---------- YouTube IFrame API ---------- */
+  let ytReady = false, ytFailed = false, player = null, tick = null, current = null;
+  window.onYouTubeIframeAPIReady = () => { ytReady = true; if (current && $('#yt')) mountPlayer(); };
+  (function loadYT() {
+    const s = document.createElement('script');
+    s.src = 'https://www.youtube.com/iframe_api';
+    s.onerror = () => { ytFailed = true; showPlayerError(); };
+    document.head.appendChild(s);
+    setTimeout(() => { if (!ytReady) { ytFailed = true; showPlayerError(); } }, 8000);
+  })();
+  function showPlayerError() {
+    const box = $('#playerMsg');
+    if (box) box.hidden = false;
+  }
+
+  function mountPlayer() {
+    if (player) { try { player.destroy(); } catch (e) {} player = null; }
+    player = new YT.Player('yt', {
+      videoId: current.id,
+      playerVars: { controls: 0, disablekb: 1, rel: 0, playsinline: 1, modestbranding: 1, fs: 0, iv_load_policy: 3 },
+      events: {
+        onReady: () => { player.setVolume(+($('#vol')?.value || 80)); startTick(); },
+        onStateChange: e => { const b = $('#playBtn'); if (b) b.innerHTML = e.data === YT.PlayerState.PLAYING ? ICON.pause : ICON.play; },
+        onError: () => toast('YouTube không phát được clip này'),
+      },
+    });
+  }
+  function startTick() {
+    clearInterval(tick);
+    tick = setInterval(() => {
+      if (!player || !player.getCurrentTime) return;
+      const t = player.getCurrentTime(), d = player.getDuration() || current.dur;
+      const tEl = $('#tNow'); if (tEl) tEl.textContent = fmt(t);
+      const dEl = $('#tDur'); if (dEl) dEl.textContent = '/ ' + fmt(d);
+      const sc = $('#scrub'); if (sc && !sc.dataset.drag) { sc.max = Math.floor(d); sc.value = Math.floor(t); }
+    }, 300);
+  }
+  const now = () => (player && player.getCurrentTime ? player.getCurrentTime() : null);
+  const seekBy = s => { if (player && player.seekTo) player.seekTo(Math.max(0, now() + s), true); };
+
+  /* ---------- Screens ---------- */
+  function renderList() {
+    clearInterval(tick); if (player) { try { player.destroy(); } catch (e) {} player = null; } current = null;
+    const done = CLIPS.filter(c => S.results[c.id]).length;
+    app.innerHTML = `<div class="screen">
+      <div class="top"><a class="back" href="index.html">${ICON.back}Browny</a><h1>Luyện nghe</h1></div>
+      <div class="hero">${bear(done ? 'happy' : 'idle')}<div class="bubble">${done ? `Đã làm ${done}/${CLIPS.length} bài rồi, giỏi quá! Chọn bài tiếp theo nhé.` : 'Chọn một bài, đeo tai nghe vào và làm như thi thật nhé!'}</div></div>
+      <div class="notice">Mỗi bài có 50 câu: Part A (1–30), Part B (31–38), Part C (39–50). Câu hỏi được đọc trong clip, 4 phương án hiện trên video. Bạn chọn đáp án ở phiếu bên dưới video.</div>
+      <div class="label">${CLIPS.length} bài · mới nhất ở trên</div>
+      <div class="list">
+        ${CLIPS.map((c, i) => {
+          const r = S.results[c.id], k = S.keys[c.id], d = S.drafts[c.id];
+          const answered = d ? d.answers.filter(Boolean).length : 0;
+          return `<button class="clip ${r ? 'done' : ''}" data-id="${c.id}">
+            <span class="num">${CLIPS.length - i}</span>
+            <span><b>${esc(c.title)}</b><small>${fmtDate(c.date)} · ${fmt(c.dur)}</small><br>
+              ${k ? '<span class="pill key">Đã có đáp án</span>' : '<span class="pill nokey">Chưa có đáp án</span>'}
+              ${!r && answered ? `<span class="pill draft">Đang làm ${answered}/50</span>` : ''}</span>
+            <span class="tail">${r ? `<strong>${r.est}</strong>${r.correct}/50` : ''}</span>
+          </button>`;
+        }).join('')}
+      </div>
+    </div>`;
+    app.querySelectorAll('.clip').forEach(b => b.onclick = () => openClip(b.dataset.id));
+  }
+
+  let panel = 'sheet';
+  function openClip(id, tab = null) {
+    current = CLIPS.find(c => c.id === id);
+    if (!S.drafts[id]) S.drafts[id] = emptyDraft();
+    panel = tab || (S.results[id] ? 'result' : 'sheet');
+    app.innerHTML = `<div class="screen">
+      <div class="top"><button class="back" id="back">${ICON.back}Danh sách</button><h1>${esc(current.title)}</h1></div>
+      <div class="player-card">
+        <div class="video-row">
+          <div class="video"><div id="yt"></div></div>
+          <div class="side"><div><span class="t" id="tNow">0:00</span> <span class="d" id="tDur">/ ${fmt(current.dur)}</span></div>
+            <div class="answered" id="answered"></div></div>
+        </div>
+        <div class="notice warn" id="playerMsg" hidden>Không tải được trình phát YouTube. Trang này cần có mạng và phải mở từ địa chỉ web (ví dụ GitHub Pages), không mở được trong khung xem trước của Claude.</div>
+        <input class="scrub" id="scrub" type="range" min="0" max="${current.dur}" value="0" aria-label="Tua clip">
+        <div class="controls">
+          <button class="ctl" id="b10" aria-label="Lùi 10 giây">−10s</button>
+          <button class="ctl" id="b5" aria-label="Lùi 5 giây">−5s</button>
+          <button class="ctl play" id="playBtn" aria-label="Phát hoặc dừng">${ICON.play}</button>
+          <button class="ctl" id="f5" aria-label="Tới 5 giây">+5s</button>
+          <button class="ctl" id="f10" aria-label="Tới 10 giây">+10s</button>
+          <label class="vol">${ICON.vol}<input id="vol" type="range" min="0" max="100" value="80" aria-label="Âm lượng"></label>
+        </div>
+        <div class="tabs" role="tablist">
+          <button data-p="sheet">Phiếu trả lời</button>
+          <button data-p="key">Đáp án</button>
+          <button data-p="result">Kết quả</button>
+        </div>
+      </div>
+      <div id="panel"></div>
+    </div>`;
+
+    $('#back').onclick = () => { save(); renderList(); };
+    $('#playBtn').onclick = () => { if (!player || !player.getPlayerState) return toast(ytFailed ? 'Trình phát chưa tải được' : 'Đang tải trình phát…'); player.getPlayerState() === YT.PlayerState.PLAYING ? player.pauseVideo() : player.playVideo(); };
+    $('#b10').onclick = () => seekBy(-10); $('#b5').onclick = () => seekBy(-5);
+    $('#f5').onclick = () => seekBy(5); $('#f10').onclick = () => seekBy(10);
+    $('#vol').oninput = e => player && player.setVolume && player.setVolume(+e.target.value);
+    const sc = $('#scrub');
+    sc.oninput = () => { sc.dataset.drag = '1'; $('#tNow').textContent = fmt(sc.value); };
+    sc.onchange = () => { delete sc.dataset.drag; if (player && player.seekTo) player.seekTo(+sc.value, true); };
+    app.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { panel = b.dataset.p; renderPanel(); });
+
+    if (ytReady) mountPlayer(); else if (ytFailed) showPlayerError();
+    renderPanel();
+  }
+
+  function updateAnswered() {
+    const d = S.drafts[current.id];
+    const n = d.answers.filter(Boolean).length, f = d.flags.filter(Boolean).length;
+    $('#answered').textContent = `Đã chọn ${n}/50${f ? ` · ${f} câu phân vân` : ''}`;
+  }
+
+  function renderPanel() {
+    app.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.p === panel));
+    updateAnswered();
+    const box = $('#panel');
+    const d = S.drafts[current.id], key = S.keys[current.id], res = S.results[current.id];
+
+    if (panel === 'sheet') {
+      const shown = res ? res.answers : d.answers;
+      box.innerHTML = `<div class="screen">
+        ${res ? '<div class="notice">Bài này đã chấm. Phiếu bên dưới hiển thị kết quả lần làm gần nhất. Muốn làm lại thì bấm "Làm lại" ở tab Kết quả.</div>' : ''}
+        ${PARTS.map(p => `<div class="part"><h3>${p.name} <span>${p.desc} · câu ${p.from}–${p.to}</span></h3>
+          ${Array.from({ length: p.to - p.from + 1 }, (_, k) => {
+            const i = p.from - 1 + k;
+            return `<div class="row" data-i="${i}"><span class="n">${i + 1}</span>
+              ${'ABCD'.split('').map(L => {
+                let cls = shown[i] === L ? 'on' : '';
+                if (res && key) { if (L === key[i] && shown[i] === L) cls = 'right'; else if (shown[i] === L) cls = 'wrong'; else if (L === key[i]) cls = 'should'; }
+                return `<button class="ch ${cls}" data-l="${L}" ${res ? 'disabled' : ''} aria-label="Câu ${i + 1} đáp án ${L}">${L}</button>`;
+              }).join('')}
+              <button class="flag ${(res ? res.flags : d.flags)[i] ? 'on' : ''}" ${res ? 'disabled' : ''} aria-label="Đánh dấu câu ${i + 1} phân vân">${ICON.flag}</button></div>`;
+          }).join('')}</div>`).join('')}
+        ${res ? '' : `<button class="btn" id="grade">${key ? 'Nộp bài và chấm điểm' : 'Nộp bài (nhập đáp án ở bước sau)'}</button>`}
+      </div>`;
+      if (!res) {
+        box.querySelectorAll('.row').forEach(row => {
+          const i = +row.dataset.i;
+          row.querySelectorAll('.ch').forEach(b => b.onclick = () => {
+            d.answers[i] = d.answers[i] === b.dataset.l ? null : b.dataset.l;
+            d.times[i] = now();
+            row.querySelectorAll('.ch').forEach(x => x.classList.toggle('on', x.dataset.l === d.answers[i]));
+            save(); updateAnswered();
+          });
+          row.querySelector('.flag').onclick = e => { d.flags[i] = !d.flags[i]; e.currentTarget.classList.toggle('on', d.flags[i]); save(); updateAnswered(); };
+        });
+        $('#grade').onclick = () => {
+          const left = N - d.answers.filter(Boolean).length;
+          if (!S.keys[current.id]) { panel = 'key'; renderPanel(); toast('Nhập đáp án ở cuối clip để chấm'); return; }
+          if (left && !$('#grade').dataset.sure) { $('#grade').dataset.sure = '1'; $('#grade').textContent = `Còn ${left} câu chưa chọn. Bấm lần nữa để nộp`; return; }
+          grade();
+        };
+      }
+    }
+
+    if (panel === 'key') {
+      box.innerHTML = `<div class="screen">
+        <div class="notice">Đáp án hiện ở cuối clip. Dừng video ở đó rồi gõ 50 chữ cái theo thứ tự câu 1 → 50. Gõ liền (ACBD…) hoặc dạng "1A 2C 3B…" đều được. Đáp án được lưu lại cho clip này.</div>
+        <textarea id="keyIn" placeholder="Ví dụ: ACBDABCDDA..." spellcheck="false" autocapitalize="characters">${esc(key || '')}</textarea>
+        <div class="keyinfo" id="keyInfo"></div>
+        <button class="btn" id="saveKey">Lưu đáp án</button>
+        <button class="btn ghost" id="seekEnd">Tua tới đoạn đáp án cuối clip</button>
+      </div>`;
+      const inp = $('#keyIn'), info = $('#keyInfo');
+      const check = () => {
+        const k = parseKey(inp.value);
+        info.textContent = k.length === N ? 'Đủ 50 đáp án.' : `Đã nhận ${k.length}/50 đáp án.`;
+        info.className = 'keyinfo ' + (k.length === N ? 'ok' : k.length > N ? 'bad' : '');
+        if (k.length > N) info.textContent = `Có ${k.length} đáp án, nhiều hơn 50. Kiểm tra lại nhé.`;
+        return k;
+      };
+      inp.oninput = check; check();
+      $('#saveKey').onclick = () => {
+        const k = check();
+        if (k.length !== N) return toast('Cần đúng 50 đáp án');
+        S.keys[current.id] = k.join(''); save();
+        toast('Đã lưu đáp án');
+        if (S.results[current.id]) { regrade(); panel = 'result'; }
+        else panel = 'sheet';
+        renderPanel();
+      };
+      $('#seekEnd').onclick = () => { if (player && player.seekTo) { const dur = player.getDuration() || current.dur; player.seekTo(Math.max(0, dur - 150), true); player.pauseVideo(); } };
+    }
+
+    if (panel === 'result') {
+      if (!res) { box.innerHTML = `<div class="notice">Chưa có kết quả. Làm bài ở tab "Phiếu trả lời" rồi nộp để chấm điểm.</div>`; return; }
+      const wrong = [];
+      for (let i = 0; i < N; i++) if (res.answers[i] !== key[i]) wrong.push(i);
+      box.innerHTML = `<div class="screen">
+        <div class="score-box">${bear(res.correct >= 35 ? 'happy' : 'idle')}
+          <div><div class="label">Điểm Listening ước tính</div><div class="big">${res.est}</div>
+          <div class="keyinfo">${res.correct}/50 câu đúng · thang 31–68 · ước tính sơ bộ</div></div></div>
+        <div class="bars">
+          ${PARTS.map(p => { const tot = p.to - p.from + 1; const c = res.byPart[p.name]; return `<div class="bar"><span>${p.name}</span><span class="track"><span class="fill" data-w="${(c / tot) * 100}"></span></span><span>${c}/${tot}</span></div>`; }).join('')}
+        </div>
+        ${wrong.length ? `<h3>Câu sai hoặc bỏ trống (${wrong.length})</h3>
+        <div class="wrongs">${wrong.map(i => `<div class="wr"><span class="q">${i + 1}</span>
+          <span>Bạn chọn <b>${res.answers[i] || '–'}</b> · đáp án <b>${key[i]}</b>${res.flags[i] ? ' · đã đánh dấu phân vân' : ''}</span>
+          ${res.times[i] != null ? `<button data-t="${res.times[i]}">Nghe lại ${fmt(Math.max(0, res.times[i] - 20))}</button>` : '<span></span>'}</div>`).join('')}</div>` : '<div class="notice">Đúng hết 50 câu. Xuất sắc!</div>'}
+        <button class="btn ghost" id="redo">Làm lại bài này</button>
+      </div>`;
+      requestAnimationFrame(() => box.querySelectorAll('.fill').forEach(f => f.style.width = f.dataset.w + '%'));
+      box.querySelectorAll('.wr button').forEach(b => b.onclick = () => {
+        if (!player || !player.seekTo) return toast('Trình phát chưa sẵn sàng');
+        player.seekTo(Math.max(0, +b.dataset.t - 20), true); player.playVideo();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      const redo = $('#redo');
+      redo.onclick = () => {
+        if (!redo.dataset.sure) { redo.dataset.sure = '1'; redo.textContent = 'Bấm lần nữa để xoá kết quả và làm lại'; return; }
+        delete S.results[current.id]; S.drafts[current.id] = emptyDraft(); save();
+        if (player && player.seekTo) { player.seekTo(0, true); player.pauseVideo(); }
+        panel = 'sheet'; renderPanel();
+      };
+    }
+  }
+
+  function parseKey(text) {
+    const t = text.trim().toUpperCase();
+    if (!t) return [];
+    if (/^[ABCD\s,.;-]+$/.test(t)) return t.replace(/[^ABCD]/g, '').split('');
+    return t.match(/(?<![A-Z])[ABCD](?![A-Z])/g) || [];
+  }
+
+  function score(answers, key) {
+    let correct = 0; const byPart = {};
+    PARTS.forEach(p => { byPart[p.name] = 0; for (let i = p.from - 1; i < p.to; i++) if (answers[i] && answers[i] === key[i]) byPart[p.name]++; correct += byPart[p.name]; });
+    return { correct, byPart, est: estimate(correct) };
+  }
+  function grade() {
+    const d = S.drafts[current.id], key = S.keys[current.id];
+    S.results[current.id] = { ...d, answers: d.answers.slice(), flags: d.flags.slice(), times: d.times.slice(), ...score(d.answers, key), at: new Date().toISOString() };
+    save(); panel = 'result'; renderPanel();
+    if (player && player.pauseVideo) player.pauseVideo();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function regrade() {
+    const r = S.results[current.id];
+    Object.assign(r, score(r.answers, S.keys[current.id])); save();
+  }
+
+  renderList();
+})();
+</script>
+</body>
+</html>
