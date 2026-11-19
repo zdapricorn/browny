@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Browny Reading</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:wght@500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Browny system: honey-milk ground, brownie accent, mint = correct, coral = wrong, honey = evidence highlight.
+   Passages use a serif face so they read like the printed test booklet. */
+:root {
+  --bg: #FBF7F4; --surface: #FFFFFF; --surface-2: #F3ECE6; --line: #E8DDD4;
+  --fg: #3B2A21; --fg-soft: #87736A; --brown: #7B4B2E; --brown-deep: #5A3420;
+  --honey: #F2B654; --honey-soft: #FDF0D5; --mint: #4FB98F; --mint-soft: #E2F5EC; --coral: #E9705E; --coral-soft: #FCE8E4;
+  --leaf: #2F9468; --leaf-soft: #DDF2E7;
+  --bear: #8A5636; --bear-light: #C08A63; --muzzle: #E9C9A8; --blush: #F49A8E;
+  --font-display: "Baloo 2", "Nunito", ui-rounded, system-ui, sans-serif;
+  --font-body: "Nunito", ui-rounded, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-passage: "Source Serif 4", Georgia, "Times New Roman", serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1E1814; --surface: #2A221D; --surface-2: #352B25; --line: #46392F;
+    --fg: #F5EAE2; --fg-soft: #B5A398; --brown: #D9A07A; --brown-deep: #F0C3A2;
+    --honey-soft: #4A3A1E; --mint: #5FCB9F; --mint-soft: #1F3A2F; --coral: #F08472; --coral-soft: #452722;
+    --leaf: #7FD4AC; --leaf-soft: #1F3A2F; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1E1814; --surface: #2A221D; --surface-2: #352B25; --line: #46392F;
+  --fg: #F5EAE2; --fg-soft: #B5A398; --brown: #D9A07A; --brown-deep: #F0C3A2;
+  --honey-soft: #4A3A1E; --mint: #5FCB9F; --mint-soft: #1F3A2F; --coral: #F08472; --coral-soft: #452722;
+  --leaf: #7FD4AC; --leaf-soft: #1F3A2F; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; border: 0; background: none; }
+button:focus-visible { outline: 3px solid var(--honey); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; text-wrap: balance; }
+[hidden] { display: none !important; }
+#app {
+  max-width: 560px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: calc(14px + env(safe-area-inset-top, 0px)) calc(40px + env(safe-area-inset-bottom, 0px));
+}
+#app.wide { max-width: 1100px; }
+.screen { display: flex; flex-direction: column; gap: 16px; animation: in .3s cubic-bezier(.2,.9,.3,1.2) both; }
+@keyframes in { from { opacity: 0; transform: translateY(10px); } }
+
+/* Bear */
+.bear .eyes-happy { display: none; }
+.bear[data-mood="happy"] .eyes-open { display: none; }
+.bear[data-mood="happy"] .eyes-happy { display: inline; }
+.bear .eyes-open { transform-box: fill-box; transform-origin: center; animation: blink 4.2s infinite; }
+@keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+.bear .body-all { transform-box: fill-box; transform-origin: 50% 100%; animation: breathe 3.2s ease-in-out infinite; }
+@keyframes breathe { 50% { transform: scale(1.025, .985); } }
+.bear .book { transform-box: fill-box; transform-origin: 50% 100%; animation: page 3.2s ease-in-out infinite; }
+@keyframes page { 50% { transform: rotate(-3deg); } }
+.bear[data-mood="happy"] .body-all { animation: sway 1.4s ease-in-out infinite; }
+@keyframes sway { 50% { transform: rotate(-4deg) translateY(-4px); } }
+
+/* Header */
+.top { display: flex; align-items: center; gap: 10px; }
+.back { display: inline-flex; align-items: center; gap: 4px; padding: 8px 10px; border-radius: 12px; font-weight: 800; color: var(--fg-soft); text-decoration: none; }
+.back:hover { background: var(--surface-2); }
+.top h1 { font-size: 22px; color: var(--brown); flex: 1; min-width: 0; }
+.clock { font-weight: 800; font-size: 14px; padding: 4px 10px; border-radius: 999px; background: var(--surface-2); color: var(--brown); font-variant-numeric: tabular-nums; }
+.clock.low { background: var(--coral-soft); color: var(--coral); }
+.hero { display: grid; grid-template-columns: 96px 1fr; gap: 12px; align-items: end; padding: 14px 16px 0; background: var(--surface); border: 2px solid var(--line); border-radius: 22px; overflow: hidden; }
+.hero svg { width: 96px; height: 106px; display: block; }
+.bubble { align-self: center; background: var(--surface-2); border-radius: 16px; padding: 10px 12px; font-weight: 700; font-size: 14.5px; margin-bottom: 14px; min-width: 0; }
+.notice { padding: 12px 14px; border-radius: 16px; background: var(--leaf-soft); font-weight: 600; font-size: 14px; }
+.label { font-size: 12px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: var(--fg-soft); }
+.section-title { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 6px; }
+.section-title h2 { font-size: 19px; }
+
+/* Cards */
+.list { display: flex; flex-direction: column; gap: 10px; }
+.card { display: grid; grid-template-columns: 52px 1fr auto; gap: 12px; align-items: center; text-align: left; padding: 12px 14px; border-radius: 18px; background: var(--surface); border: 2px solid var(--line); box-shadow: 0 4px 0 var(--line); transition: transform .08s; width: 100%; }
+.card:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+.card .ic { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: var(--leaf-soft); color: var(--leaf); font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+.card .ic svg { width: 26px; height: 26px; }
+.card.done .ic { background: var(--mint-soft); color: var(--mint); }
+.card b { display: block; font-size: 15.5px; }
+.card small { color: var(--fg-soft); font-weight: 700; font-size: 13px; }
+.card .tail { text-align: right; font-weight: 800; font-size: 13px; color: var(--fg-soft); font-variant-numeric: tabular-nums; }
+.card .tail strong { display: block; font-family: var(--font-display); font-size: 20px; color: var(--brown); }
+.stats { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 20px; background: var(--surface); border: 2px solid var(--line); }
+.bar { display: grid; grid-template-columns: 112px 1fr 56px; gap: 8px; align-items: center; font-weight: 700; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.bar .track { height: 10px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.bar .fill { height: 100%; border-radius: 999px; background: var(--mint); width: 0; transition: width .9s cubic-bezier(.2,.9,.3,1.1); }
+.bar .fill.weak { background: var(--coral); }
+.bar .fill.mid { background: var(--honey); }
+.bar span:last-child { text-align: right; }
+
+/* Reader */
+.reader { display: grid; gap: 14px; }
+@media (min-width: 900px) { .reader { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: start; } .reader .passage-wrap { position: sticky; top: calc(12px + env(safe-area-inset-top, 0px)); } }
+.passage-wrap { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.ptabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.ptabs button { padding: 6px 12px; border-radius: 999px; background: var(--surface-2); font-weight: 800; font-size: 13px; color: var(--fg-soft); }
+.ptabs button.on { background: var(--brown); color: #FFF8F2; }
+.passage { background: var(--surface); border: 2px solid var(--line); border-radius: 18px; padding: 14px 14px 14px 6px; max-height: 46vh; overflow: auto; overscroll-behavior: contain; font-family: var(--font-passage); font-size: 16px; line-height: 1.65; }
+@media (min-width: 900px) { .passage { max-height: calc(100vh - 160px); } }
+.passage h3 { font-family: var(--font-passage); font-weight: 600; font-size: 17px; padding-left: 44px; margin-bottom: 6px; }
+.ln { display: grid; grid-template-columns: 38px 1fr; gap: 6px; border-radius: 6px; transition: background .3s; }
+.ln .no { text-align: right; font-family: var(--font-body); font-size: 11px; font-weight: 700; color: var(--line); padding-top: 4px; font-variant-numeric: tabular-nums; user-select: none; }
+.ln .no.five { color: var(--fg-soft); }
+.ln.para .tx { text-indent: 1.4em; }
+.ln.ev { background: var(--honey-soft); }
+.ln.ev .no { color: var(--brown); }
+/* Phones: source lines are too long to keep one per row, so text flows as paragraphs
+   and line numbers become small inline tags at lines 5, 10, 15… */
+@media (max-width: 700px) {
+  .passage { padding: 14px; font-size: 15.5px; }
+  .passage h3 { padding-left: 0; }
+  .ln { display: inline; border-radius: 3px; }
+  .ln .no { display: none; }
+  .ln .no.five { display: inline-block; font-size: 10px; line-height: 1.5; color: var(--brown); background: var(--surface-2); border-radius: 6px; padding: 0 5px; margin-right: 4px; vertical-align: 2px; }
+  .ln.para::before { content: ""; display: block; height: 10px; }
+  .ln.para .tx { text-indent: 0; }
+  .ln.ev { -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+}
+.gw { border-bottom: 1.5px dotted var(--bear-light); cursor: pointer; }
+.gw:hover { background: var(--surface-2); }
+.expand { align-self: flex-start; font-size: 13px; font-weight: 800; color: var(--brown); padding: 4px 8px; border-radius: 8px; }
+.passage.full { max-height: none; }
+
+/* Questions */
+.qcol { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.qcard { background: var(--surface); border: 2px solid var(--line); border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.qhead { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.qtype { font-size: 11.5px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; background: var(--surface-2); color: var(--brown); }
+.qnum { font-weight: 800; color: var(--fg-soft); font-size: 13px; font-variant-numeric: tabular-nums; }
+.qtext { font-weight: 700; font-size: 16px; }
+.opts { display: grid; gap: 8px; }
+.opt { display: flex; gap: 10px; align-items: flex-start; text-align: left; padding: 10px 12px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); font-weight: 600; font-size: 15px; transition: border-color .15s, background .15s; }
+.opt .k { flex: none; width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; border: 2px solid var(--line); font-family: var(--font-display); font-size: 13px; color: var(--fg-soft); }
+.opt:hover:not([disabled]) { border-color: var(--bear-light); }
+.opt.sel { border-color: var(--brown); background: var(--surface-2); }
+.opt.sel .k { border-color: var(--brown); color: var(--brown); }
+.opt.right { border-color: var(--mint); background: var(--mint-soft); animation: pop .4s cubic-bezier(.3,1.8,.5,1); }
+.opt.right .k { background: var(--mint); border-color: var(--mint); color: #fff; }
+.opt.wrong { border-color: var(--coral); background: var(--coral-soft); animation: shake .4s; }
+.opt.wrong .k { background: var(--coral); border-color: var(--coral); color: #fff; }
+.opt[disabled] { cursor: default; }
+@keyframes pop { 40% { transform: scale(1.03); } }
+@keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+.feedback { border-radius: 14px; padding: 12px; font-weight: 600; font-size: 14.5px; display: flex; flex-direction: column; gap: 6px; }
+.feedback.ok { background: var(--mint-soft); }
+.feedback.no { background: var(--coral-soft); }
+.feedback b { font-family: var(--font-display); font-size: 17px; }
+.feedback.ok b { color: var(--mint); }
+.feedback.no b { color: var(--coral); }
+.evbtn { align-self: flex-start; font-size: 13px; font-weight: 800; color: var(--brown); background: var(--honey-soft); padding: 5px 10px; border-radius: 10px; }
+.btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px 18px; border-radius: 16px; font-weight: 800; font-size: 16px; background: var(--brown); color: #FFF8F2; box-shadow: 0 5px 0 var(--brown-deep); }
+.btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--brown-deep); }
+.btn.ghost { background: var(--surface); color: var(--fg); border: 2px solid var(--line); box-shadow: 0 5px 0 var(--line); }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn:not(.ghost), :root:not([data-theme="light"]) .ptabs button.on, :root:not([data-theme="light"]) .ch.on { color: #2A1A10; } }
+:root[data-theme="dark"] .btn:not(.ghost), :root[data-theme="dark"] .ptabs button.on, :root[data-theme="dark"] .ch.on { color: #2A1A10; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Answer sheet (ETS) */
+.part { display: flex; flex-direction: column; gap: 6px; }
+.part h3 { font-size: 16px; display: flex; justify-content: space-between; gap: 8px; }
+.part h3 span { font-family: var(--font-body); font-size: 12.5px; font-weight: 700; color: var(--fg-soft); }
+.srow { display: grid; grid-template-columns: 34px repeat(4, 1fr) 38px; gap: 6px; align-items: center; padding: 4px 0; border-bottom: 1px dashed var(--line); }
+.srow .n { font-weight: 800; color: var(--fg-soft); text-align: right; font-variant-numeric: tabular-nums; }
+.ch { height: 40px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); font-family: var(--font-display); font-weight: 600; color: var(--fg-soft); }
+.ch.on { background: var(--brown); border-color: var(--brown); color: #FFF8F2; }
+.ch.right { background: var(--mint); border-color: var(--mint); color: #fff; }
+.ch.wrong { background: var(--coral); border-color: var(--coral); color: #fff; }
+.ch.should { border: 2px dashed var(--mint); color: var(--mint); }
+.mark { text-align: center; font-weight: 800; font-size: 20px; }
+.mark.ok { color: var(--mint); } .mark.no { color: var(--coral); }
+.flag { height: 40px; border-radius: 12px; color: var(--line); display: grid; place-items: center; }
+.flag svg { width: 20px; height: 20px; } .flag.on { color: var(--honey); }
+
+/* Result */
+.score-box { display: grid; grid-template-columns: 100px 1fr; gap: 12px; align-items: center; padding: 14px 16px; border-radius: 20px; background: var(--surface); border: 2px solid var(--line); }
+.score-box svg { width: 100px; height: 110px; }
+.big { font-family: var(--font-display); font-size: 44px; font-weight: 700; color: var(--brown); line-height: 1; font-variant-numeric: tabular-nums; }
+.soft { color: var(--fg-soft); font-weight: 700; font-size: 13.5px; }
+.review { display: flex; flex-direction: column; gap: 8px; }
+.rv { display: grid; grid-template-columns: 40px 1fr; gap: 10px; padding: 10px 12px; border-radius: 14px; background: var(--surface); border: 2px solid var(--line); font-size: 14px; font-weight: 600; }
+.rv .q { font-family: var(--font-display); font-size: 18px; text-align: center; }
+.rv.ok .q { color: var(--mint); } .rv.no .q { color: var(--coral); }
+.rv p { margin: 4px 0 0; color: var(--fg-soft); }
+
+/* Word popover */
+.pop { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: var(--surface); border-top: 2px solid var(--line); box-shadow: 0 -10px 30px rgba(0,0,0,.08); transform: translateY(105%); transition: transform .3s cubic-bezier(.2,1.2,.4,1); }
+.pop.show { transform: none; }
+.pop-inner { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
+.pop .w { font-family: var(--font-passage); font-size: 22px; font-weight: 600; }
+.pop .m { font-weight: 700; }
+.vocab-item { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 10px 14px; border-radius: 14px; background: var(--surface); border: 2px solid var(--line); }
+.vocab-item b { font-family: var(--font-passage); font-size: 17px; }
+.vocab-item small { display: block; color: var(--fg-soft); font-weight: 700; }
+.vocab-item button { color: var(--fg-soft); font-weight: 800; font-size: 13px; padding: 6px 8px; border-radius: 8px; }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); opacity: 0; background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 14px; font-weight: 800; font-size: 14px; transition: .25s; pointer-events: none; z-index: 50; max-width: calc(100% - 32px); text-align: center; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.confetti { position: fixed; z-index: 39; width: 8px; height: 8px; border-radius: 3px; pointer-events: none; animation: burst .9s cubic-bezier(.2,.7,.4,1) forwards; }
+@keyframes burst { to { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="pop" id="pop"><div class="pop-inner" id="popInner"></div></div>
+<div class="toast" id="toast"></div>
+<script src="reading-data.js" charset="utf-8"></script>
+<script>
+(() => {
+  const { PASSAGES, ETS_SETS, convertS3 } = window.BROWNY_READING;
+  const byId = Object.fromEntries(PASSAGES.map(p => [p.id, p]));
+  const TYPES = { main: 'Ý chính', detail: 'Chi tiết', vocab: 'Từ vựng', reference: 'Đại từ thay thế', inference: 'Suy luận', except: 'NOT / EXCEPT', purpose: 'Mục đích tác giả' };
+  const L = 'ABCD';
+
+  /* ---------- Storage ---------- */
+  const KEY = 'browny-reading-v1';
+  let S = { done: {}, typeStats: {}, vocab: [], ets: {} };
+  try { const raw = localStorage.getItem(KEY); if (raw) S = { ...S, ...JSON.parse(raw) }; } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+  /* ---------- Helpers ---------- */
+  const $ = s => document.querySelector(s);
+  const app = $('#app');
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  let toastT;
+  const toast = m => { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1800); };
+  const fmt = s => { s = Math.max(0, Math.ceil(s)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+  function confetti(el) {
+    const r = el.getBoundingClientRect(), colors = ['#F2B654', '#4FB98F', '#E9705E', '#C08A63'];
+    for (let i = 0; i < 14; i++) {
+      const c = document.createElement('i'); c.className = 'confetti';
+      const a = Math.random() * Math.PI * 2, d = 40 + Math.random() * 60;
+      c.style.cssText = `left:${r.left + r.width / 2}px;top:${r.top + r.height / 2}px;background:${colors[i % 4]};--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d - 20}px;--rot:${Math.random() * 400}deg`;
+      document.body.appendChild(c); setTimeout(() => c.remove(), 950);
+    }
+  }
+  let timer = null;
+  const stopTimer = () => { clearInterval(timer); timer = null; };
+
+  function bear(mood = 'idle') {
+    return `<svg class="bear" data-mood="${mood}" viewBox="0 0 200 220" role="img" aria-label="Gấu Browny đọc sách">
+      <g class="body-all">
+        <ellipse cx="100" cy="196" rx="54" ry="30" fill="var(--bear)"/>
+        <circle cx="50" cy="52" r="27" fill="var(--bear)"/><circle cx="50" cy="54" r="14" fill="var(--bear-light)"/>
+        <circle cx="150" cy="52" r="27" fill="var(--bear)"/><circle cx="150" cy="54" r="14" fill="var(--bear-light)"/>
+        <ellipse cx="100" cy="104" rx="74" ry="68" fill="var(--bear)"/>
+        <ellipse cx="100" cy="134" rx="33" ry="25" fill="var(--muzzle)"/>
+        <ellipse cx="58" cy="124" rx="10" ry="6" fill="var(--blush)" opacity=".55"/><ellipse cx="142" cy="124" rx="10" ry="6" fill="var(--blush)" opacity=".55"/>
+        <g class="eyes-open"><ellipse cx="74" cy="104" rx="7" ry="8" fill="#2B1A12"/><circle cx="76" cy="101" r="2.5" fill="#fff"/>
+          <ellipse cx="126" cy="104" rx="7" ry="8" fill="#2B1A12"/><circle cx="128" cy="101" r="2.5" fill="#fff"/></g>
+        <g class="eyes-happy" fill="none" stroke="#2B1A12" stroke-width="4.5" stroke-linecap="round"><path d="M65 106 Q74 94 83 106"/><path d="M117 106 Q126 94 135 106"/></g>
+        <ellipse cx="100" cy="124" rx="10" ry="7" fill="#2B1A12"/>
+        <path d="M90 136 Q100 144 110 136" fill="none" stroke="#2B1A12" stroke-width="3.5" stroke-linecap="round"/>
+        <g class="book"><path d="M52 168 L100 176 L148 168 L148 206 L100 214 L52 206 Z" fill="#2F9468"/>
+          <path d="M100 176 L100 214" stroke="#1E6E4C" stroke-width="3"/><path d="M58 172 L98 179 L98 208 L58 202Z M142 172 L102 179 L102 208 L142 202Z" fill="#F7F1E8"/>
+          <path d="M64 182 L92 186 M64 190 L92 194 M108 186 L136 182 M108 194 L136 190" stroke="#C9BBA9" stroke-width="2.5" stroke-linecap="round"/></g>
+        <ellipse cx="56" cy="186" rx="14" ry="12" fill="var(--bear)"/><ellipse cx="144" cy="186" rx="14" ry="12" fill="var(--bear)"/>
+      </g></svg>`;
+  }
+  const ICON = {
+    back: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+    book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 5c3-1 6-1 9 1v14c-3-2-6-2-9-1zM21 5c-3-1-6-1-9 1v14c3-2 6-2 9-1z"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="13" r="7.5"/><path d="M12 9v4l2.5 2M9 3h6"/></svg>',
+    sheet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 8h6M9 12h6M9 16h3" stroke-linecap="round"/></svg>',
+    star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5L2.5 9.3l6.6-.8z"/></svg>',
+    flag: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h2v18H6zM8 4h10l-2.5 4L18 12H8z"/></svg>',
+  };
+
+  /* ---------- Passage rendering ---------- */
+  function glossRegex(p) {
+    const keys = Object.keys(p.glossary).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    return new RegExp(`\\b(${keys.join('|')})\\b`, 'gi');
+  }
+  function passageHTML(p, ev) {
+    const re = glossRegex(p);
+    const paras = new Set(p.paragraphs);
+    return `<h3>${esc(p.title)}</h3>` + p.lines.map((t, i) => {
+      const n = i + 1, inEv = ev && n >= ev[0] && n <= ev[1];
+      const tx = esc(t).replace(re, m => `<span class="gw" data-w="${esc(m.toLowerCase())}">${m}</span>`);
+      return `<div class="ln ${paras.has(n) ? 'para' : ''} ${inEv ? 'ev' : ''}" data-n="${n}"><span class="no ${n % 5 === 0 ? 'five' : ''}">${n}</span><span class="tx">${tx}</span> </div>`;
+    }).join('');
+  }
+  function bindPassage(box, p) {
+    box.querySelectorAll('.gw').forEach(w => w.onclick = () => showWord(w.dataset.w, p));
+  }
+  function highlight(box, ev) {
+    box.querySelectorAll('.ln').forEach(l => { const n = +l.dataset.n; l.classList.toggle('ev', !!ev && n >= ev[0] && n <= ev[1]); });
+    if (ev) {
+      const first = box.querySelector(`.ln[data-n="${ev[0]}"]`);
+      if (first) box.scrollTo({ top: first.offsetTop - box.clientHeight / 3, behavior: 'smooth' });
+      if (window.innerWidth < 900) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+  function showWord(w, p) {
+    const meaning = p.glossary[w] || p.glossary[Object.keys(p.glossary).find(k => k.toLowerCase() === w)];
+    const saved = S.vocab.some(v => v.word === w);
+    $('#popInner').innerHTML = `<div class="w">${esc(w)}</div><div class="m">${esc(meaning || '')}</div>
+      <div class="soft">Trong bài "${esc(p.title)}"</div>
+      <div class="row2"><button class="btn ghost" id="popClose">Đóng</button><button class="btn" id="popSave" ${saved ? 'disabled' : ''}>${saved ? 'Đã lưu' : 'Lưu từ này'}</button></div>`;
+    $('#pop').classList.add('show');
+    $('#popClose').onclick = () => $('#pop').classList.remove('show');
+    $('#popSave').onclick = () => { S.vocab.push({ word: w, meaning, from: p.title, at: Date.now() }); save(); toast('Đã lưu vào Từ của tôi'); $('#pop').classList.remove('show'); };
+  }
+  const hidePop = () => $('#pop').classList.remove('show');
+
+  function recordTypes(items) {
+    items.forEach(({ type, ok }) => { const t = S.typeStats[type] || (S.typeStats[type] = { c: 0, n: 0 }); t.n++; if (ok) t.c++; });
+  }
+
+  /* ---------- Home ---------- */
+  function renderHome() {
+    stopTimer(); hidePop(); app.classList.remove('wide');
+    const doneCount = PASSAGES.filter(p => S.done[p.id]).length;
+    const typeRows = Object.entries(TYPES).filter(([k]) => S.typeStats[k]?.n);
+    app.innerHTML = `<div class="screen">
+      <div class="top"><a class="back" href="index.html">${ICON.back}Browny</a><h1>Đọc hiểu</h1></div>
+      <div class="hero">${bear(doneCount ? 'happy' : 'idle')}<div class="bubble">${doneCount ? `Đã đọc ${doneCount}/${PASSAGES.length} bài rồi! Chạm vào từ có gạch chấm để xem nghĩa nhé.` : 'Đọc một bài, trả lời 10 câu. Từ nào có gạch chấm thì chạm vào để xem nghĩa nhé!'}</div></div>
+      ${typeRows.length ? `<div class="section-title"><h2>Dạng câu của bạn</h2><span class="label">% đúng</span></div>
+        <div class="stats">${typeRows.map(([k, name]) => { const t = S.typeStats[k], pct = Math.round(t.c / t.n * 100);
+          return `<div class="bar"><span>${name}</span><span class="track"><span class="fill ${pct < 50 ? 'weak' : pct < 75 ? 'mid' : ''}" data-w="${pct}"></span></span><span>${t.c}/${t.n}</span></div>`; }).join('')}</div>` : ''}
+      <div class="section-title"><h2>Bài đọc luyện tập</h2><span class="label">${PASSAGES.length} bài · 10 câu</span></div>
+      <div class="list">${PASSAGES.map((p, i) => { const d = S.done[p.id];
+        return `<button class="card ${d ? 'done' : ''}" data-p="${p.id}"><span class="ic">${i + 1}</span>
+          <span><b>${esc(p.title)}</b><small>${p.topic} · ${p.questions.length} câu · ${'●'.repeat(p.level)}${'○'.repeat(3 - p.level)}</small></span>
+          <span class="tail">${d ? `<strong>${d.correct}/${d.total}</strong>lần gần nhất` : ''}</span></button>`; }).join('')}</div>
+      <button class="card" id="mini"><span class="ic">${ICON.clock}</span><span><b>Mini test ${PASSAGES.length} bài</b><small>${PASSAGES.length * 10} câu · ${PASSAGES.reduce((s, p) => s + p.minutes, 0)} phút · chấm cuối bài như thi thật</small></span><span class="tail">${S.mini ? `<strong>${S.mini.correct}/${S.mini.total}</strong>` : ''}</span></button>
+      <div class="section-title"><h2>Đề ETS trong sách</h2><span class="label">Phiếu trả lời</span></div>
+      <div class="notice">Đọc bài trong sách hoặc file PDF "TOEFL ITP Practice Test Level 1 Vol. 3", chọn đáp án ở phiếu, app chấm và quy đổi điểm theo bảng của ETS.</div>
+      <div class="list">${ETS_SETS.map(e => { const r = S.ets[e.id]?.result;
+        return `<button class="card ${r ? 'done' : ''}" data-e="${e.id}"><span class="ic">${ICON.sheet}</span><span><b>${esc(e.title)} · Reading</b><small>50 câu · 55 phút · ${esc(e.note.split(', ')[1])}</small></span>
+          <span class="tail">${r ? `<strong>${r.scaled}</strong>${r.correct}/50` : ''}</span></button>`; }).join('')}</div>
+      <button class="card" id="vocab"><span class="ic">${ICON.star}</span><span><b>Từ của tôi</b><small>${S.vocab.length} từ đã lưu từ các bài đọc</small></span><span class="tail"></span></button>
+      <p class="soft" style="text-align:center;margin:0">Bài luyện tập do AI soạn theo format ITP, dựa trên kiến thức từ nguồn của chính phủ Mỹ. Chưa được giáo viên duyệt.</p>
+    </div>`;
+    requestAnimationFrame(() => app.querySelectorAll('.fill').forEach(f => f.style.width = f.dataset.w + '%'));
+    app.querySelectorAll('[data-p]').forEach(b => b.onclick = () => startPractice(b.dataset.p));
+    app.querySelectorAll('[data-e]').forEach(b => b.onclick = () => renderEts(b.dataset.e));
+    $('#mini').onclick = () => startTest(PASSAGES.map(p => p.id));
+    $('#vocab').onclick = renderVocab;
+  }
+
+  /* ---------- Practice (feedback after each question) ---------- */
+  let run = null;
+  function startPractice(pid) {
+    const p = byId[pid];
+    run = { mode: 'practice', p, i: 0, picked: null, locked: false, results: [] };
+    renderPractice();
+  }
+  function renderPractice() {
+    hidePop(); app.classList.add('wide');
+    const { p, i } = run, qq = p.questions[i];
+    run.picked = null; run.locked = false;
+    app.innerHTML = `<div class="screen">
+      <div class="top"><button class="back" id="back">${ICON.back}Thoát</button><h1>${esc(p.title)}</h1><span class="qnum">${i + 1}/${p.questions.length}</span></div>
+      <div class="reader">
+        <div class="passage-wrap"><div class="passage" id="passage">${passageHTML(p)}</div><button class="expand" id="expand">Mở rộng bài đọc</button></div>
+        <div class="qcol">
+          <div class="qcard">
+            <div class="qhead"><span class="qtype">${TYPES[qq.type]}</span><span class="qnum">Câu ${i + 1}</span></div>
+            <div class="qtext">${esc(qq.text)}</div>
+            <div class="opts">${qq.options.map((o, k) => `<button class="opt" data-k="${k}"><span class="k">${L[k]}</span><span>${esc(o)}</span></button>`).join('')}</div>
+            <div id="fb"></div>
+            <button class="btn" id="check" disabled>Kiểm tra</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+    const box = $('#passage');
+    bindPassage(box, p);
+    $('#expand').onclick = () => { box.classList.toggle('full'); $('#expand').textContent = box.classList.contains('full') ? 'Thu gọn bài đọc' : 'Mở rộng bài đọc'; };
+    $('#back').onclick = renderHome;
+    app.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+      if (run.locked) return;
+      run.picked = +b.dataset.k;
+      app.querySelectorAll('.opt').forEach(x => x.classList.toggle('sel', x === b));
+      $('#check').disabled = false;
+    });
+    $('#check').onclick = () => {
+      if (run.locked) { nextPractice(); return; }
+      if (run.picked === null) return;
+      run.locked = true;
+      const ok = run.picked === qq.answer;
+      run.results.push({ type: qq.type, ok, picked: run.picked });
+      const opts = app.querySelectorAll('.opt');
+      opts.forEach(b => b.disabled = true);
+      opts[qq.answer].classList.add('right');
+      if (!ok) opts[run.picked].classList.add('wrong'); else confetti(opts[qq.answer]);
+      $('#fb').innerHTML = `<div class="feedback ${ok ? 'ok' : 'no'}"><b>${ok ? 'Chính xác!' : `Đáp án đúng: ${L[qq.answer]}`}</b><span>${esc(qq.explain)}</span>
+        <button class="evbtn" id="evb">Xem bằng chứng: dòng ${qq.ev[0]}${qq.ev[1] !== qq.ev[0] ? '–' + qq.ev[1] : ''}</button></div>`;
+      highlight(box, qq.ev);
+      $('#evb').onclick = () => highlight(box, qq.ev);
+      $('#check').textContent = run.i < p.questions.length - 1 ? 'Câu tiếp theo' : 'Xem kết quả';
+    };
+  }
+  function nextPractice() {
+    if (run.i < run.p.questions.length - 1) { run.i++; renderPractice(); window.scrollTo({ top: 0 }); return; }
+    const correct = run.results.filter(r => r.ok).length;
+    S.done[run.p.id] = { correct, total: run.results.length, at: Date.now() };
+    recordTypes(run.results); save();
+    renderResult({ title: run.p.title, correct, total: run.results.length, items: run.p.questions.map((qq, k) => ({ p: run.p, qq, picked: run.results[k].picked })) });
+  }
+
+  /* ---------- Test (no feedback until the end) ---------- */
+  function startTest(pids) {
+    const ps = pids.map(id => byId[id]);
+    run = { mode: 'test', ps, cur: 0, answers: ps.map(p => Array(p.questions.length).fill(null)), deadline: Date.now() + ps.reduce((s, p) => s + p.minutes, 0) * 60000 };
+    stopTimer();
+    timer = setInterval(() => {
+      const left = (run.deadline - Date.now()) / 1000, c = $('#clock');
+      if (left <= 0) { stopTimer(); toast('Hết giờ! Tự động nộp bài.'); finishTest(); return; }
+      if (c) { c.textContent = fmt(left); c.classList.toggle('low', left < 120); }
+    }, 500);
+    renderTest();
+  }
+  function renderTest() {
+    hidePop(); app.classList.add('wide');
+    const p = run.ps[run.cur], ans = run.answers[run.cur];
+    const answered = run.answers.flat().filter(a => a !== null).length, total = run.answers.flat().length;
+    app.innerHTML = `<div class="screen">
+      <div class="top"><button class="back" id="back">${ICON.back}Thoát</button><h1>Mini test</h1><span class="clock" id="clock">${fmt((run.deadline - Date.now()) / 1000)}</span></div>
+      <div class="ptabs">${run.ps.map((x, k) => `<button data-t="${k}" class="${k === run.cur ? 'on' : ''}">Bài ${k + 1} · ${run.answers[k].filter(a => a !== null).length}/${x.questions.length}</button>`).join('')}</div>
+      <div class="reader">
+        <div class="passage-wrap"><div class="passage" id="passage">${passageHTML(p)}</div><button class="expand" id="expand">Mở rộng bài đọc</button></div>
+        <div class="qcol">
+          ${p.questions.map((qq, i) => `<div class="qcard" data-q="${i}"><div class="qhead"><span class="qtype">${TYPES[qq.type]}</span><span class="qnum">Câu ${i + 1}</span></div>
+            <div class="qtext">${esc(qq.text)}</div>
+            <div class="opts">${qq.options.map((o, k) => `<button class="opt ${ans[i] === k ? 'sel' : ''}" data-k="${k}"><span class="k">${L[k]}</span><span>${esc(o)}</span></button>`).join('')}</div></div>`).join('')}
+          ${run.cur < run.ps.length - 1 ? `<button class="btn ghost" id="nextP">Sang bài ${run.cur + 2}</button>` : ''}
+          <button class="btn" id="submit">Nộp bài (${answered}/${total} câu)</button>
+        </div>
+      </div>
+    </div>`;
+    const box = $('#passage'); bindPassage(box, p);
+    $('#expand').onclick = () => { box.classList.toggle('full'); $('#expand').textContent = box.classList.contains('full') ? 'Thu gọn bài đọc' : 'Mở rộng bài đọc'; };
+    $('#back').onclick = () => { const b = $('#back'); if (!b.dataset.sure) { b.dataset.sure = 1; b.lastChild.textContent = 'Bấm lần nữa để thoát'; return; } stopTimer(); renderHome(); };
+    app.querySelectorAll('.ptabs button').forEach(b => b.onclick = () => { run.cur = +b.dataset.t; renderTest(); window.scrollTo({ top: 0 }); });
+    app.querySelectorAll('.qcard').forEach(card => { const i = +card.dataset.q;
+      card.querySelectorAll('.opt').forEach(o => o.onclick = () => {
+        ans[i] = ans[i] === +o.dataset.k ? null : +o.dataset.k;
+        card.querySelectorAll('.opt').forEach(x => x.classList.toggle('sel', +x.dataset.k === ans[i]));
+        const a = run.answers.flat().filter(v => v !== null).length;
+        $('#submit').textContent = `Nộp bài (${a}/${total} câu)`;
+        const tab = app.querySelector(`.ptabs button[data-t="${run.cur}"]`); if (tab) tab.textContent = `Bài ${run.cur + 1} · ${ans.filter(v => v !== null).length}/${p.questions.length}`;
+      });
+    });
+    const np = $('#nextP'); if (np) np.onclick = () => { run.cur++; renderTest(); window.scrollTo({ top: 0 }); };
+    $('#submit').onclick = () => {
+      const left = run.answers.flat().filter(a => a === null).length, s = $('#submit');
+      if (left && !s.dataset.sure) { s.dataset.sure = 1; s.textContent = `Còn ${left} câu chưa chọn. Bấm lần nữa để nộp`; return; }
+      finishTest();
+    };
+  }
+  function finishTest() {
+    stopTimer();
+    const items = [], typed = [];
+    run.ps.forEach((p, pi) => p.questions.forEach((qq, i) => { const picked = run.answers[pi][i]; items.push({ p, qq, picked }); typed.push({ type: qq.type, ok: picked === qq.answer }); }));
+    const correct = typed.filter(t => t.ok).length;
+    recordTypes(typed);
+    S.mini = { correct, total: items.length, at: Date.now() }; save();
+    renderResult({ title: 'Mini test', correct, total: items.length, items, scaled: true });
+  }
+
+  /* ---------- Result + review ---------- */
+  function renderResult({ title, correct, total, items, scaled }) {
+    hidePop(); app.classList.remove('wide');
+    const est = scaled ? convertS3(Math.round(correct / total * 50)) : null;
+    const byType = {};
+    items.forEach(({ qq, picked }) => { const t = byType[qq.type] || (byType[qq.type] = { c: 0, n: 0 }); t.n++; if (picked === qq.answer) t.c++; });
+    app.innerHTML = `<div class="screen">
+      <div class="top"><button class="back" id="back">${ICON.back}Đọc hiểu</button><h1>${esc(title)}</h1></div>
+      <div class="score-box">${bear(correct / total >= .7 ? 'happy' : 'idle')}<div>
+        <div class="label">${est ? 'Điểm Reading ước tính' : 'Số câu đúng'}</div>
+        <div class="big">${est ? `${est[0]}${est[1] !== est[0] ? '–' + est[1] : ''}` : `${correct}/${total}`}</div>
+        <div class="soft">${est ? `${correct}/${total} câu đúng · quy đổi theo bảng trong đề luyện ETS (thang 31–67)` : correct / total >= .8 ? 'Giỏi lắm! Thử bài tiếp theo nhé.' : 'Xem lại câu sai bên dưới, bấm vào để mở bằng chứng trong bài.'}</div></div></div>
+      <div class="stats">${Object.entries(byType).map(([k, t]) => { const pct = Math.round(t.c / t.n * 100);
+        return `<div class="bar"><span>${TYPES[k]}</span><span class="track"><span class="fill ${pct < 50 ? 'weak' : pct < 75 ? 'mid' : ''}" data-w="${pct}"></span></span><span>${t.c}/${t.n}</span></div>`; }).join('')}</div>
+      <h3>Xem lại từng câu</h3>
+      <div class="review">${items.map(({ p, qq, picked }, n) => { const ok = picked === qq.answer;
+        return `<div class="rv ${ok ? 'ok' : 'no'}"><span class="q">${ok ? '✓' : '✗'}</span><div>
+          <div><b>${esc(qq.text)}</b></div>
+          <div class="soft">${items.length > 10 ? esc(p.title) + ' · ' : ''}Bạn chọn ${picked === null ? '–' : L[picked]} · Đáp án ${L[qq.answer]}: ${esc(qq.options[qq.answer])}</div>
+          <p>${esc(qq.explain)}</p>
+          <button class="evbtn" data-n="${n}" style="margin-top:6px">Xem bằng chứng trong bài · dòng ${qq.ev[0]}–${qq.ev[1]}</button></div></div>`; }).join('')}</div>
+      <button class="btn" id="home">Về trang Đọc hiểu</button>
+    </div>`;
+    requestAnimationFrame(() => app.querySelectorAll('.fill').forEach(f => f.style.width = f.dataset.w + '%'));
+    $('#back').onclick = renderHome; $('#home').onclick = renderHome;
+    app.querySelectorAll('.evbtn').forEach(b => b.onclick = () => { const it = items[+b.dataset.n]; showEvidence(it.p, it.qq, () => renderResult({ title, correct, total, items, scaled })); });
+  }
+  function showEvidence(p, qq, back) {
+    app.classList.add('wide');
+    app.innerHTML = `<div class="screen">
+      <div class="top"><button class="back" id="back">${ICON.back}Kết quả</button><h1>${esc(p.title)}</h1></div>
+      <div class="reader"><div class="passage-wrap"><div class="passage full" id="passage">${passageHTML(p, qq.ev)}</div></div>
+        <div class="qcol"><div class="qcard"><div class="qhead"><span class="qtype">${TYPES[qq.type]}</span></div><div class="qtext">${esc(qq.text)}</div>
+          <div class="opts">${qq.options.map((o, k) => `<div class="opt ${k === qq.answer ? 'right' : ''}"><span class="k">${L[k]}</span><span>${esc(o)}</span></div>`).join('')}</div>
+          <div class="feedback ok"><span>${esc(qq.explain)}</span></div></div></div></div></div>`;
+    const box = $('#passage'); bindPassage(box, p);
+    $('#back').onclick = back;
+    setTimeout(() => { const l = box.querySelector(`.ln[data-n="${qq.ev[0]}"]`); if (l) l.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+  }
+
+  /* ---------- ETS answer sheet ---------- */
+  function renderEts(id) {
+    stopTimer(); hidePop(); app.classList.remove('wide');
+    const e = ETS_SETS.find(x => x.id === id);
+    const st = S.ets[id] || (S.ets[id] = { answers: Array(50).fill(null), flags: Array(50).fill(false) });
+    const res = st.result, key = e.key;
+    const shown = res ? res.answers : st.answers;
+    app.innerHTML = `<div class="screen">
+      <div class="top"><button class="back" id="back">${ICON.back}Đọc hiểu</button><h1>${esc(e.title)}</h1>${st.deadline && !res ? `<span class="clock" id="clock"></span>` : ''}</div>
+      ${res ? `<div class="score-box">${bear(res.correct >= 35 ? 'happy' : 'idle')}<div><div class="label">Điểm Reading quy đổi</div><div class="big">${res.range}</div>
+        <div class="soft">${res.correct}/50 câu đúng · theo bảng quy đổi của ETS trong sách</div></div></div>
+        <div class="row2"><button class="btn ghost" id="redo">Làm lại</button><button class="btn" id="home2">Xong</button></div>`
+      : `<div class="notice">Mở ${esc(e.note)}. Đọc bài và chọn đáp án ở phiếu dưới đây. Chọn đủ 50 câu là app tự chấm.</div>
+        ${st.deadline ? '' : '<button class="btn ghost" id="startTimer">Bấm giờ 55 phút như thi thật</button>'}`}
+      ${e.groups.map(([a, b], gi) => `<div class="part"><h3>Bài đọc ${gi + 1} <span>câu ${a}–${b}</span></h3>
+        ${Array.from({ length: b - a + 1 }, (_, k) => { const i = a - 1 + k;
+          return `<div class="srow" data-i="${i}"><span class="n">${i + 1}</span>${L.split('').map(x => {
+            let c = shown[i] === x ? 'on' : '';
+            if (res) { if (x === key[i] && shown[i] === x) c = 'right'; else if (shown[i] === x) c = 'wrong'; else if (x === key[i]) c = 'should'; }
+            return `<button class="ch ${c}" data-l="${x}" ${res ? 'disabled' : ''} aria-label="Câu ${i + 1} đáp án ${x}">${x}</button>`; }).join('')}
+            ${res ? `<span class="mark ${shown[i] === key[i] ? 'ok' : 'no'}">${shown[i] === key[i] ? '✓' : '✗'}</span>` : `<button class="flag ${st.flags[i] ? 'on' : ''}" aria-label="Đánh dấu câu ${i + 1}">${ICON.flag}</button>`}</div>`; }).join('')}</div>`).join('')}
+      ${res ? '' : '<button class="btn" id="submit">Nộp bài và chấm điểm</button>'}
+    </div>`;
+    $('#back').onclick = renderHome;
+    if (res) {
+      $('#home2').onclick = renderHome;
+      $('#redo').onclick = () => { const b = $('#redo'); if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = 'Bấm lần nữa để xoá'; return; } S.ets[id] = { answers: Array(50).fill(null), flags: Array(50).fill(false) }; save(); renderEts(id); };
+      return;
+    }
+    const grade = () => {
+      stopTimer();
+      const correct = st.answers.filter((a, i) => a === key[i]).length, sc = convertS3(correct);
+      st.result = { answers: st.answers.slice(), correct, range: sc[0] === sc[1] ? `${sc[0]}` : `${sc[0]}–${sc[1]}`, scaled: Math.round((sc[0] + sc[1]) / 2), at: Date.now() };
+      delete st.deadline; save(); renderEts(id); window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    if (st.deadline) {
+      const tick = () => { const left = (st.deadline - Date.now()) / 1000, c = $('#clock'); if (left <= 0) { toast('Hết 55 phút! Tự động chấm.'); grade(); return; } if (c) { c.textContent = fmt(left); c.classList.toggle('low', left < 300); } };
+      tick(); timer = setInterval(tick, 500);
+    }
+    const stt = $('#startTimer'); if (stt) stt.onclick = () => { st.deadline = Date.now() + 55 * 60000; save(); renderEts(id); };
+    app.querySelectorAll('.srow').forEach(row => { const i = +row.dataset.i;
+      row.querySelectorAll('.ch').forEach(b => b.onclick = () => {
+        st.answers[i] = st.answers[i] === b.dataset.l ? null : b.dataset.l;
+        row.querySelectorAll('.ch').forEach(x => x.classList.toggle('on', x.dataset.l === st.answers[i]));
+        save();
+        if (st.answers.every(Boolean)) { toast('Đủ 50 câu rồi, chấm điểm nè!'); setTimeout(grade, 600); }
+      });
+      row.querySelector('.flag').onclick = ev => { st.flags[i] = !st.flags[i]; ev.currentTarget.classList.toggle('on', st.flags[i]); save(); };
+    });
+    $('#submit').onclick = () => { const left = st.answers.filter(a => !a).length, s = $('#submit');
+      if (left && !s.dataset.sure) { s.dataset.sure = 1; s.textContent = `Còn ${left} câu chưa chọn. Bấm lần nữa để nộp`; return; } grade(); };
+  }
+
+  /* ---------- Saved words ---------- */
+  function renderVocab() {
+    hidePop(); app.classList.remove('wide');
+    app.innerHTML = `<div class="screen">
+      <div class="top"><button class="back" id="back">${ICON.back}Đọc hiểu</button><h1>Từ của tôi</h1></div>
+      ${S.vocab.length ? `<div class="list">${S.vocab.slice().reverse().map(v => `<div class="vocab-item"><div><b>${esc(v.word)}</b><small>${esc(v.meaning)} · ${esc(v.from)}</small></div><button data-w="${esc(v.word)}">Xoá</button></div>`).join('')}</div>`
+        : `<div class="hero">${bear()}<div class="bubble">Chưa có từ nào. Khi đọc bài, chạm vào từ có gạch chấm rồi bấm "Lưu từ này" nhé.</div></div>`}
+    </div>`;
+    $('#back').onclick = renderHome;
+    app.querySelectorAll('.vocab-item button').forEach(b => b.onclick = () => { S.vocab = S.vocab.filter(v => v.word !== b.dataset.w); save(); renderVocab(); });
+  }
+
+  renderHome();
+})();
+</script>
+</body>
+</html>

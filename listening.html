@@ -266,7 +266,10 @@ textarea { width: 100%; min-height: 110px; padding: 12px; border-radius: 16px; b
   const toast = m => { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1900); };
   const emptyDraft = () => ({ answers: Array(N).fill(null), flags: Array(N).fill(false), times: Array(N).fill(null) });
   // Rough linear mapping onto the Listening scale (31–68), not ETS's official conversion table.
-  const estimate = correct => Math.round(31 + 37 * correct / N);
+  // Section 1 converted score ranges from the ETS practice book (page 141); we show the midpoint.
+  const S1_ROWS = [48, 45, 42, 39, 36, 33, 30, 27, 24, 21, 18, 15, 12, 9, 0];
+  const S1_SCALE = [[64, 68], [59, 62], [56, 58], [54, 56], [52, 54], [51, 52], [49, 50], [48, 49], [46, 47], [45, 46], [43, 44], [40, 42], [36, 39], [32, 33], [31, 31]];
+  const estimate = correct => { const r = S1_SCALE[S1_ROWS.findIndex(m => correct >= m)]; return Math.round((r[0] + r[1]) / 2); };
 
   function bear(mood = 'idle') {
     return `<svg class="bear" data-mood="${mood}" viewBox="0 0 200 220" role="img" aria-label="Gấu Browny đeo tai nghe">
@@ -509,7 +512,7 @@ textarea { width: 100%; min-height: 110px; padding: 12px; border-radius: 16px; b
       box.innerHTML = `<div class="screen">
         <div class="score-box">${bear(res.correct >= 35 ? 'happy' : 'idle')}
           <div><div class="label">Điểm Listening ước tính</div><div class="big">${res.est}</div>
-          <div class="keyinfo">${res.correct}/50 câu đúng · thang 31–68 · ước tính sơ bộ</div></div></div>
+          <div class="keyinfo">${res.correct}/50 câu đúng · thang 31–68 · quy đổi theo bảng trong đề luyện ETS</div></div></div>
         <div class="bars">
           ${PARTS.map(p => { const tot = p.to - p.from + 1; const c = res.byPart[p.name]; return `<div class="bar"><span>${p.name}</span><span class="track"><span class="fill" data-w="${(c / tot) * 100}"></span></span><span>${c}/${tot}</span></div>`; }).join('')}
         </div>
