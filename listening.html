@@ -130,6 +130,15 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; text
 .flag svg { width: 20px; height: 20px; }
 .flag.on { color: var(--honey); }
 
+.mark { height: 40px; display: grid; place-items: center; font-weight: 800; font-size: 20px; }
+.mark.ok { color: var(--mint); }
+.mark.no { color: var(--coral); }
+.graded { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 18px; background: var(--surface); border: 2px solid var(--line); font-size: 15px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12.5px; font-weight: 800; }
+.lg { padding: 3px 10px; border-radius: 999px; border: 2px solid transparent; }
+.lg.right { background: var(--mint); color: #fff; }
+.lg.wrong { background: var(--coral); color: #fff; }
+.lg.should { border: 2px dashed var(--mint); color: var(--mint); }
 /* Key */
 textarea { width: 100%; min-height: 110px; padding: 12px; border-radius: 16px; border: 2px solid var(--line); background: var(--surface); font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 15px; letter-spacing: 1px; resize: vertical; }
 .keyinfo { font-weight: 700; font-size: 14px; color: var(--fg-soft); font-variant-numeric: tabular-nums; }
@@ -175,7 +184,7 @@ textarea { width: 100%; min-height: 110px; padding: 12px; border-radius: 16px; b
   /* Clips from the playlist "Toefl ITP Listening Tests" (English Test Exercises), newest first.
      Only titles, dates and links are stored here; test content stays on YouTube. */
   const CLIPS = [
-    ['AF4q4igCNoQ', 'Practice Test 25', '2026-07-06', 1701],
+    ['AF4q4igCNoQ', 'Practice Test 25 (trùng đề Test 8)', '2026-07-06', 1701],
     ['8X8IVFpnT-0', 'Practice Test 24', '2026-05-28', 1723],
     ['z9oZIgkbYwg', 'Test 23', '2026-04-29', 1658],
     ['1C1K3MMzLsk', 'Practice Test 22', '2026-03-11', 1659],
@@ -200,18 +209,52 @@ textarea { width: 100%; min-height: 110px; padding: 12px; border-radius: 16px; b
     ['n9lZs7OSsXE', 'Test 3', '2017-05-19', 1760],
     ['pQGDN8-pw18', 'Full TOEFL ITP/PBT Listening Test', '2015-05-09', 1508],
   ].map(([id, title, date, dur]) => ({ id, title, date, dur }));
-  const PARTS = [
-    { name: 'Part A', desc: 'Hội thoại ngắn', from: 1, to: 30 },
-    { name: 'Part B', desc: 'Hội thoại dài', from: 31, to: 38 },
-    { name: 'Part C', desc: 'Bài giảng', from: 39, to: 50 },
-  ];
+  /* Answer keys read from the answer screens at the end of each clip (2026-11-19).
+     Format: [50 letters for questions 1–50, last question number of Part B]. */
+  const BUILTIN = {
+    'Mwein9FQ-Y4': ['CDCCCDCADABBDCCDDBDABBBDAAABDDCBACCBBCBDCBCCDBABCC', 38],
+    'AF4q4igCNoQ': ['CDCACBABDBDADACDAACDCDCABBDACBBCBDDBDBABDBBDCABACC', 37],
+    '8X8IVFpnT-0': ['BAADCDCCADBDCABADCCBCAACDBCABBCCBDACBCAADACBADACDB', 37],
+    'z9oZIgkbYwg': ['BDAABADACBCBCDCADCAACAABCBDBCDADACBDABABCCBCDDACDC', 38],
+    '1C1K3MMzLsk': ['CABADDBCBDCCDCAADABDABBADCDCBACBBABCBDDBABDCCAACDA', 38],
+    'DUmIVy1nEdc': ['DABCADBCADBCDBCABDCADCBCBCDACABCDAADBCBDACBCBDBBAD', 38],
+    'o8gx3Fp_rYE': ['DCACBDBADCBBCDCBDDBACCBDCBDACADCBADCBDBCCABADDBCCA', 38],
+    'anIC7A9560s': ['DDACABBDACCADBCABDADBCABADBADCBCACCABDCACDDCABBDCD', 38],
+    'nYilXytZcgU': ['BDACDCADBCCBCABCBDCDADACBCADCBACDCBBDACABDDABCDADB', 38],
+    'EpQQ72DL7uk': ['BADBCCDABDCAADACBBBDCAADDBBDCDACDCBBADCDCACBADACDC', 38],
+    'hwAvR3nKQGw': ['BBCCDCCCCABBCCDBBBDCDCABBCCCCBBCCBCDABACBCBBCBBCCC', 38],
+    'gX2km7JCmt0': ['BDBDCBADBADBCBCCAABABCBACBCACBBCBDCDBACDBACDABCBDA', 40],
+    'G8REuwrLZCE': ['DDBAACAABADBCADDBDCDADDADCCABCCDACDDCACBABCBDBACDA', 40],
+    '0nchWVCVleI': ['DBBAABDDBBCABDDDCDACBCDACADCDCDABCABBACDCBADDBDBAC', 40],
+    'BTfPEme-y6c': ['DDBCCAAADBDBDDCACAACBCABCCBDADDDABDABDCACCBADBAABD', 39],
+    'fEZSnYpKhBE': ['ACDCDAACBDBDDCAACBCDBBCCBCCDBDBACCBABCCCBABBADDCCB', 38],
+    'Ngacvhi0cwQ': ['CBADBDCACBDBAABDCDABDCDDCCBADACABBDAADBCBACABADBBC', 38],
+    'iPwvIqtTgNA': ['CDCACBABDBDADACDAACDCDCABBDACBBCBDDBDBABDBBDCABACC', 37],
+    'L_yJOy3Anto': ['DBCDBBDCBABBDCACDCBACDABCBCBABCABCDDADBBABBCCDBDAD', 38],
+    'cJNuGvTzKqI': ['DCDBCBBCDDACCAABADBBDABBDBABABBADADBBCABCABABCAADB', 38],
+    '7xgRkdiSKt0': ['BACCDDCBABDCBCAAABCDAACDABCDACDBACABABDACBADDAABCD', 38],
+    'MM0plhKxzmA': ['AACDCABDBBACCDBBBCACCDAABABCACCBBABDACCABBCABADCBC', 38],
+    'n9lZs7OSsXE': ['DCBDBACDBBCDBAADABCCDBAABCCDADAADCBCBCADCACDBCCBCD', 38],
+    'pQGDN8-pw18': ['DDADCDACBAACDCCBACBBDDADACCDDBBCADADBCBCDDBBBADBDB', 38],
+  };
   const N = 50;
+  // Each clip splits Part B / Part C a little differently (31–37, 31–38, 31–39 or 31–40).
+  const partsFor = id => {
+    const bEnd = (BUILTIN[id] && BUILTIN[id][1]) || 38;
+    return [
+      { name: 'Part A', desc: 'Hội thoại ngắn', from: 1, to: 30 },
+      { name: 'Part B', desc: 'Hội thoại dài', from: 31, to: bEnd },
+      { name: 'Part C', desc: 'Bài giảng', from: bEnd + 1, to: 50 },
+    ];
+  };
 
   /* ---------- Storage (per device) ---------- */
   const KEY = 'browny-listening-v1';
   let S = { keys: {}, drafts: {}, results: {} };
   try { const raw = localStorage.getItem(KEY); if (raw) S = { ...S, ...JSON.parse(raw) }; } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+  // A key typed in by the user overrides the built-in one.
+  const keyFor = id => S.keys[id] || (BUILTIN[id] && BUILTIN[id][0]) || null;
 
   /* ---------- Helpers ---------- */
   const $ = s => document.querySelector(s);
@@ -300,11 +343,11 @@ textarea { width: 100%; min-height: 110px; padding: 12px; border-radius: 16px; b
     app.innerHTML = `<div class="screen">
       <div class="top"><a class="back" href="index.html">${ICON.back}Browny</a><h1>Luyện nghe</h1></div>
       <div class="hero">${bear(done ? 'happy' : 'idle')}<div class="bubble">${done ? `Đã làm ${done}/${CLIPS.length} bài rồi, giỏi quá! Chọn bài tiếp theo nhé.` : 'Chọn một bài, đeo tai nghe vào và làm như thi thật nhé!'}</div></div>
-      <div class="notice">Mỗi bài có 50 câu: Part A (1–30), Part B (31–38), Part C (39–50). Câu hỏi được đọc trong clip, 4 phương án hiện trên video. Bạn chọn đáp án ở phiếu bên dưới video.</div>
+      <div class="notice">Mỗi bài có 50 câu, chia Part A, B, C. Câu hỏi được đọc trong clip, 4 phương án hiện trên video. Bạn chọn đáp án ở phiếu bên dưới video. Trả lời đủ 50 câu là app tự chấm và tô màu đúng sai.</div>
       <div class="label">${CLIPS.length} bài · mới nhất ở trên</div>
       <div class="list">
         ${CLIPS.map((c, i) => {
-          const r = S.results[c.id], k = S.keys[c.id], d = S.drafts[c.id];
+          const r = S.results[c.id], k = keyFor(c.id), d = S.drafts[c.id];
           const answered = d ? d.answers.filter(Boolean).length : 0;
           return `<button class="clip ${r ? 'done' : ''}" data-id="${c.id}">
             <span class="num">${CLIPS.length - i}</span>
@@ -320,6 +363,7 @@ textarea { width: 100%; min-height: 110px; padding: 12px; border-radius: 16px; b
   }
 
   let panel = 'sheet';
+  const revealed = {};
   function openClip(id, tab = null) {
     current = CLIPS.find(c => c.id === id);
     if (!S.drafts[id]) S.drafts[id] = emptyDraft();
@@ -375,12 +419,15 @@ textarea { width: 100%; min-height: 110px; padding: 12px; border-radius: 16px; b
     app.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.p === panel));
     updateAnswered();
     const box = $('#panel');
-    const d = S.drafts[current.id], key = S.keys[current.id], res = S.results[current.id];
+    const d = S.drafts[current.id], key = keyFor(current.id), res = S.results[current.id];
+    const PARTS = partsFor(current.id);
 
     if (panel === 'sheet') {
       const shown = res ? res.answers : d.answers;
       box.innerHTML = `<div class="screen">
-        ${res ? '<div class="notice">Bài này đã chấm. Phiếu bên dưới hiển thị kết quả lần làm gần nhất. Muốn làm lại thì bấm "Làm lại" ở tab Kết quả.</div>' : ''}
+        ${res ? `<div class="graded"><div><b>${res.correct}/50 câu đúng</b> · điểm ước tính ${res.est}</div>
+          <div class="legend"><span class="lg right">Đúng</span><span class="lg wrong">Bạn chọn sai</span><span class="lg should">Đáp án đúng</span></div>
+          <button class="btn ghost" id="toResult">Xem phân tích và nghe lại câu sai</button></div>` : ''}
         ${PARTS.map(p => `<div class="part"><h3>${p.name} <span>${p.desc} · câu ${p.from}–${p.to}</span></h3>
           ${Array.from({ length: p.to - p.from + 1 }, (_, k) => {
             const i = p.from - 1 + k;
@@ -390,10 +437,12 @@ textarea { width: 100%; min-height: 110px; padding: 12px; border-radius: 16px; b
                 if (res && key) { if (L === key[i] && shown[i] === L) cls = 'right'; else if (shown[i] === L) cls = 'wrong'; else if (L === key[i]) cls = 'should'; }
                 return `<button class="ch ${cls}" data-l="${L}" ${res ? 'disabled' : ''} aria-label="Câu ${i + 1} đáp án ${L}">${L}</button>`;
               }).join('')}
-              <button class="flag ${(res ? res.flags : d.flags)[i] ? 'on' : ''}" ${res ? 'disabled' : ''} aria-label="Đánh dấu câu ${i + 1} phân vân">${ICON.flag}</button></div>`;
+              ${res ? (key && shown[i] === key[i] ? '<span class="mark ok" aria-label="Đúng">✓</span>' : '<span class="mark no" aria-label="Sai">✗</span>')
+                : `<button class="flag ${d.flags[i] ? 'on' : ''}" aria-label="Đánh dấu câu ${i + 1} phân vân">${ICON.flag}</button>`}</div>`;
           }).join('')}</div>`).join('')}
         ${res ? '' : `<button class="btn" id="grade">${key ? 'Nộp bài và chấm điểm' : 'Nộp bài (nhập đáp án ở bước sau)'}</button>`}
       </div>`;
+      const tr = $('#toResult'); if (tr) tr.onclick = () => { panel = 'result'; renderPanel(); };
       if (!res) {
         box.querySelectorAll('.row').forEach(row => {
           const i = +row.dataset.i;
@@ -402,12 +451,16 @@ textarea { width: 100%; min-height: 110px; padding: 12px; border-radius: 16px; b
             d.times[i] = now();
             row.querySelectorAll('.ch').forEach(x => x.classList.toggle('on', x.dataset.l === d.answers[i]));
             save(); updateAnswered();
+            if (d.answers.every(Boolean) && keyFor(current.id)) {
+              toast('Đã trả lời đủ 50 câu, chấm điểm nè!');
+              setTimeout(() => grade('sheet'), 600);
+            }
           });
           row.querySelector('.flag').onclick = e => { d.flags[i] = !d.flags[i]; e.currentTarget.classList.toggle('on', d.flags[i]); save(); updateAnswered(); };
         });
         $('#grade').onclick = () => {
           const left = N - d.answers.filter(Boolean).length;
-          if (!S.keys[current.id]) { panel = 'key'; renderPanel(); toast('Nhập đáp án ở cuối clip để chấm'); return; }
+          if (!keyFor(current.id)) { panel = 'key'; renderPanel(); toast('Nhập đáp án ở cuối clip để chấm'); return; }
           if (left && !$('#grade').dataset.sure) { $('#grade').dataset.sure = '1'; $('#grade').textContent = `Còn ${left} câu chưa chọn. Bấm lần nữa để nộp`; return; }
           grade();
         };
@@ -415,8 +468,14 @@ textarea { width: 100%; min-height: 110px; padding: 12px; border-radius: 16px; b
     }
 
     if (panel === 'key') {
+      if (key && !res && !revealed[current.id]) {
+        box.innerHTML = `<div class="screen"><div class="notice">Bài này đã có sẵn đáp án, lấy từ màn hình đáp án ở cuối clip. Làm xong bài thì app tự chấm, không cần mở ra xem.</div>
+          <button class="btn ghost" id="reveal">Vẫn hiện đáp án</button></div>`;
+        $('#reveal').onclick = () => { revealed[current.id] = true; renderPanel(); };
+        return;
+      }
       box.innerHTML = `<div class="screen">
-        <div class="notice">Đáp án hiện ở cuối clip. Dừng video ở đó rồi gõ 50 chữ cái theo thứ tự câu 1 → 50. Gõ liền (ACBD…) hoặc dạng "1A 2C 3B…" đều được. Đáp án được lưu lại cho clip này.</div>
+        <div class="notice">${BUILTIN[current.id] ? 'Đáp án lấy từ màn hình cuối clip. Nếu thấy chỗ nào khác với video, sửa rồi bấm Lưu.' : 'Đáp án hiện ở cuối clip. Dừng video ở đó rồi gõ 50 chữ cái theo thứ tự câu 1 → 50.'} Gõ liền (ACBD…) hoặc dạng "1A 2C 3B…" đều được.</div>
         <textarea id="keyIn" placeholder="Ví dụ: ACBDABCDDA..." spellcheck="false" autocapitalize="characters">${esc(key || '')}</textarea>
         <div class="keyinfo" id="keyInfo"></div>
         <button class="btn" id="saveKey">Lưu đáp án</button>
@@ -485,19 +544,19 @@ textarea { width: 100%; min-height: 110px; padding: 12px; border-radius: 16px; b
 
   function score(answers, key) {
     let correct = 0; const byPart = {};
-    PARTS.forEach(p => { byPart[p.name] = 0; for (let i = p.from - 1; i < p.to; i++) if (answers[i] && answers[i] === key[i]) byPart[p.name]++; correct += byPart[p.name]; });
+    partsFor(current.id).forEach(p => { byPart[p.name] = 0; for (let i = p.from - 1; i < p.to; i++) if (answers[i] && answers[i] === key[i]) byPart[p.name]++; correct += byPart[p.name]; });
     return { correct, byPart, est: estimate(correct) };
   }
-  function grade() {
-    const d = S.drafts[current.id], key = S.keys[current.id];
+  function grade(target = 'result') {
+    const d = S.drafts[current.id], key = keyFor(current.id);
     S.results[current.id] = { ...d, answers: d.answers.slice(), flags: d.flags.slice(), times: d.times.slice(), ...score(d.answers, key), at: new Date().toISOString() };
-    save(); panel = 'result'; renderPanel();
+    save(); panel = target; renderPanel();
     if (player && player.pauseVideo) player.pauseVideo();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   function regrade() {
     const r = S.results[current.id];
-    Object.assign(r, score(r.answers, S.keys[current.id])); save();
+    Object.assign(r, score(r.answers, keyFor(current.id))); save();
   }
 
   renderList();
