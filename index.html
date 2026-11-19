@@ -313,6 +313,7 @@ body { margin: 0; }
 <div class="sheet" id="sheet"><div class="sheet-inner" id="sheetInner"></div></div>
 <div class="toast" id="toast"></div>
 
+<script src="rewards.js"></script>
 <script src="questions.js"></script>
 <script>
 (() => {
@@ -448,20 +449,22 @@ body { margin: 0; }
   }
 
   function renderHome() {
+    hideSheet();
+    const RW = BrownyRewards.summary(), GREET = BrownyRewards.greeting();
     tab = 'home'; showNav(true);
     const pct = v => ((v - 310) / (677 - 310)) * 100;
     app.innerHTML = `<div class="screen">
       <header class="topbar">
         <div class="wordmark">${bear('idle').replace('class="bear"', 'class="bear" style="width:34px;height:36px"')}Browny</div>
         <div class="chips">
-          <span class="chip" title="Chuỗi ngày học">${ICON.flame}${S.streak}</span>
-          <span class="chip" title="Điểm kinh nghiệm">${ICON.star}${S.xp}</span>
+          <span class="chip" title="Chuỗi ngày học liên tiếp">${ICON.flame}${RW.streak}</span>
+          <span class="chip" title="Điểm kinh nghiệm">${ICON.star}${RW.xp}</span>
         </div>
       </header>
 
       <section class="hero">
         <button class="bear-btn" id="heroBear" aria-label="Chạm vào Browny">${bear('wave', 'bigBear')}</button>
-        <div class="bubble" id="bubble">${CHEERS_IDLE[0]}</div>
+        <div class="bubble" id="bubble">${esc(GREET.text)}</div>
       </section>
 
       <section class="score" aria-label="Điểm dự đoán">
@@ -494,6 +497,8 @@ body { margin: 0; }
           </div>`;
         }).join('')}
       </div>
+      <div class="section-head"><h2>Thành tựu</h2><span class="label">${RW.badges}/${RW.badgeTotal} · đúng ${RW.totals.correct} câu</span></div>
+      ${BrownyRewards.badgesHTML()}
       <p class="note">Câu hỏi do AI soạn theo format TOEFL ITP, đang chờ giáo viên duyệt. Đây không phải đề thi thật của ETS. Điểm dự đoán chỉ mang tính minh hoạ.</p>
     </div>`;
 
@@ -506,10 +511,8 @@ body { margin: 0; }
     });
     setTimeout(() => { const b = $('#bigBear'); if (b) b.setAttribute('data-mood', 'idle'); }, 1500);
 
-    let ci = 0;
     $('#heroBear').onclick = () => {
-      ci = (ci + 1) % CHEERS_IDLE.length;
-      const bub = $('#bubble'); bub.textContent = CHEERS_IDLE[ci];
+      const bub = $('#bubble'); bub.textContent = BrownyRewards.nie(Math.random() < .5 ? 'hello' : 'ok');
       bub.classList.remove('pop'); void bub.offsetWidth; bub.classList.add('pop');
       setMood($('#bigBear'), 'happy', 'idle', 750);
     };
@@ -686,7 +689,7 @@ body { margin: 0; }
 
     const qb = $('#qBear');
     if (ok) {
-      run.correct++; run.xp += 10;
+      run.correct++; run.xp += 10; BrownyRewards.answer(true);
       setMood(qb, 'happy', 'idle', 800);
       const r = optFor(q.answer).getBoundingClientRect();
       confetti(r.left + r.width / 2, r.top + r.height / 2);
@@ -694,7 +697,7 @@ body { margin: 0; }
       if (S.mistakes.includes(q.id)) S.mistakes = S.mistakes.filter(x => x !== q.id);
     } else {
       setMood(qb, 'sad');
-      run.wrong.push(q.id);
+      run.wrong.push(q.id); BrownyRewards.answer(false);
       if (!S.mistakes.includes(q.id)) S.mistakes.push(q.id);
     }
     save();
@@ -725,7 +728,7 @@ body { margin: 0; }
 
   function renderResult() {
     if (tab === 'result') return;
-    stopTimer();
+    stopTimer(); hideSheet();
     tab = 'result'; showNav(false);
     const n = run.ids.length, c = run.correct;
     const ratio = c / n;
@@ -739,6 +742,7 @@ body { margin: 0; }
     // Rough linear mapping onto the Section 2 scale (31–68); a placeholder until real conversion data exists.
     const est = run.test ? Math.round(31 + 37 * ratio) : null;
 
+    const rw = BrownyRewards.finish({ kind: 'structure', correct: c, total: n });
     const titles = ['Cố lên nào!', 'Khá lắm!', 'Giỏi lắm!', 'Xuất sắc!'];
     app.innerHTML = `<div class="screen result">
       ${bear(stars >= 2 ? 'cheer' : 'idle', 'rBear')}
@@ -747,7 +751,7 @@ body { margin: 0; }
       <div class="sub">${esc(run.title)}${unlocked ? ' · Đã mở khoá trạm mới' : ''}</div>
       <div class="stats">
         <div class="stat"><b>${c}/${n}</b><span>Câu đúng</span></div>
-        <div class="stat"><b>+${run.xp + bonus}</b><span>XP</span></div>
+        <div class="stat"><b>+${rw.gained}</b><span>XP</span></div>
         <div class="stat"><b>${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}</b><span>Thời gian</span></div>
       </div>
       ${est !== null ? `<div class="est"><span class="label">Điểm Section 2 ước tính</span><b>${est}</b><span>/ 68 · ước tính sơ bộ${run.answered < n ? ` · còn ${n - run.answered} câu chưa làm` : ''}</span></div>` : ''}

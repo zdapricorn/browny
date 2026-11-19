@@ -216,6 +216,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; text
 <div id="app"></div>
 <div class="pop" id="pop"><div class="pop-inner" id="popInner"></div></div>
 <div class="toast" id="toast"></div>
+<script src="rewards.js"></script>
 <script src="reading-data.js" charset="utf-8"></script>
 <script>
 (() => {
@@ -394,6 +395,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; text
       run.locked = true;
       const ok = run.picked === qq.answer;
       run.results.push({ type: qq.type, ok, picked: run.picked });
+      BrownyRewards.answer(ok);
       const opts = app.querySelectorAll('.opt');
       opts.forEach(b => b.disabled = true);
       opts[qq.answer].classList.add('right');
@@ -409,6 +411,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; text
     if (run.i < run.p.questions.length - 1) { run.i++; renderPractice(); window.scrollTo({ top: 0 }); return; }
     const correct = run.results.filter(r => r.ok).length;
     S.done[run.p.id] = { correct, total: run.results.length, at: Date.now() };
+    BrownyRewards.finish({ kind: 'reading', correct, total: run.results.length });
     recordTypes(run.results); save();
     renderResult({ title: run.p.title, correct, total: run.results.length, items: run.p.questions.map((qq, k) => ({ p: run.p, qq, picked: run.results[k].picked })) });
   }
@@ -470,6 +473,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; text
     const correct = typed.filter(t => t.ok).length;
     recordTypes(typed);
     S.mini = { correct, total: items.length, at: Date.now() }; save();
+    BrownyRewards.finish({ kind: 'reading', correct, total: items.length });
     renderResult({ title: 'Mini test', correct, total: items.length, items, scaled: true });
   }
 
@@ -547,6 +551,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; text
       const correct = st.answers.filter((a, i) => a === key[i]).length, sc = convertS3(correct);
       st.result = { answers: st.answers.slice(), correct, range: sc[0] === sc[1] ? `${sc[0]}` : `${sc[0]}–${sc[1]}`, scaled: Math.round((sc[0] + sc[1]) / 2), at: Date.now() };
       delete st.deadline; save(); renderEts(id); window.scrollTo({ top: 0, behavior: 'smooth' });
+      BrownyRewards.finish({ kind: 'ets', correct, total: 50 });
     };
     if (st.deadline) {
       const tick = () => { const left = (st.deadline - Date.now()) / 1000, c = $('#clock'); if (left <= 0) { toast('Hết 55 phút! Tự động chấm.'); grade(); return; } if (c) { c.textContent = fmt(left); c.classList.toggle('low', left < 300); } };

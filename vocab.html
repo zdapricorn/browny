@@ -169,6 +169,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; text
 <body>
 <div id="app"></div>
 <div class="toast" id="toast"></div>
+<script src="rewards.js"></script>
 <script src="vocab-data.js" charset="utf-8"></script>
 <script>
 (() => {
@@ -329,6 +330,8 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; text
     setTimeout(() => renderCard(), 300);
   }
   function renderStudyEnd() {
+    // Count a study session once it covered at least 5 cards; "Nhớ rồi" counts as a correct answer.
+    if (run.done >= 5 && !run.rewarded) { run.rewarded = true; BrownyRewards.finish({ kind: 'vocab', correct: run.stats[2], total: run.stats[0] + run.stats[1] + run.stats[2] }); }
     const [a, b, c] = run.stats, good = c >= a + b;
     app.innerHTML = `<div class="screen result">
       ${bear(good ? 'happy' : 'idle')}
@@ -373,6 +376,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; text
       const k = +b.dataset.k, ok = k === it.answer, opts = app.querySelectorAll('.opt');
       opts.forEach(x => x.disabled = true);
       opts[it.answer].classList.add('right');
+      BrownyRewards.answer(ok);
       if (!ok) { opts[k].classList.add('wrong'); run.wrong.push(it.c); $('.mini-bear .bear').setAttribute('data-mood', 'sad'); }
       else { run.correct++; confetti(opts[k]); $('.mini-bear .bear').setAttribute('data-mood', 'happy'); }
       $('.mini-bear .say').textContent = ok ? 'Chuẩn luôn!' : 'Không sao, nhớ từ này nhé.';
@@ -382,6 +386,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; text
     $('#next').onclick = () => { run.i++; renderQuiz(); };
   }
   function renderQuizEnd() {
+    if (!run.rewarded) { run.rewarded = true; BrownyRewards.finish({ kind: 'quiz', correct: run.correct, total: run.items.length }); }
     const n = run.items.length, good = run.correct / n >= .8;
     app.innerHTML = `<div class="screen result">
       ${bear(good ? 'happy' : 'idle')}

@@ -179,6 +179,7 @@ textarea { width: 100%; min-height: 110px; padding: 12px; border-radius: 16px; b
 <div id="app"></div>
 <div class="toast" id="toast"></div>
 
+<script src="rewards.js"></script>
 <script>
 (() => {
   /* Clips from the playlist "Toefl ITP Listening Tests" (English Test Exercises), newest first.
@@ -554,6 +555,7 @@ textarea { width: 100%; min-height: 110px; padding: 12px; border-radius: 16px; b
     const d = S.drafts[current.id], key = keyFor(current.id);
     S.results[current.id] = { ...d, answers: d.answers.slice(), flags: d.flags.slice(), times: d.times.slice(), ...score(d.answers, key), at: new Date().toISOString() };
     save(); panel = target; renderPanel();
+    BrownyRewards.finish({ kind: 'listening', correct: S.results[current.id].correct, total: N });
     if (player && player.pauseVideo) player.pauseVideo();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
