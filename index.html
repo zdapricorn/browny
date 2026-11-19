@@ -435,7 +435,7 @@ body { margin: 0; }
     { name: 'Listening', bg: '#DCEBFA', live: true, svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#3E7CC0" stroke-width="2.4" stroke-linecap="round"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4.5" height="6" rx="2" fill="#3E7CC0"/><rect x="16.5" y="14" width="4.5" height="6" rx="2" fill="#3E7CC0"/></svg>' },
     { name: 'Structure', bg: '#F6E3D4', live: true, svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#7B4B2E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 7l3 3"/></svg>' },
     { name: 'Reading', bg: '#DDF2E7', live: true, svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#2F9468" stroke-width="2.4" stroke-linejoin="round"><path d="M3 5c3-1 6-1 9 1v14c-3-2-6-2-9-1zM21 5c-3-1-6-1-9 1v14c3-2 6-2 9-1z"/></svg>' },
-    { name: 'Từ vựng', bg: '#FBEBCB', svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#C48A1E" stroke-width="2.4" stroke-linejoin="round"><rect x="4" y="6" width="13" height="15" rx="2.5"/><path d="M8 3h10a2 2 0 0 1 2 2v12"/></svg>' },
+    { name: 'Từ vựng', bg: '#FBEBCB', live: true, svg: '<svg viewBox="0 0 24 24" fill="none" stroke="#C48A1E" stroke-width="2.4" stroke-linejoin="round"><rect x="4" y="6" width="13" height="15" rx="2.5"/><path d="M8 3h10a2 2 0 0 1 2 2v12"/></svg>' },
   ];
 
   /* ---------------- Screens ---------------- */
@@ -517,6 +517,7 @@ body { margin: 0; }
     app.querySelectorAll('.skill').forEach(b => b.onclick = () => {
       if (b.dataset.skill === 'Listening') location.href = 'listening.html';
       else if (b.dataset.skill === 'Reading') location.href = 'reading.html';
+      else if (b.dataset.skill === 'Từ vựng') location.href = 'vocab.html';
       else if (b.dataset.skill === 'Structure') startPractice(shuffle(QUESTIONS).slice(0, 10).map(q => q.id), 'Luyện Structure tự do');
       else toast(`${b.dataset.skill} sẽ có trong bản tiếp theo`);
     });
