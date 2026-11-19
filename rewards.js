@@ -222,6 +222,11 @@
       return `<div class="bw-tile ${got ? '' : 'locked'}" title="${b.desc}"><span class="ic">${svg(b.icon, b.color, 26)}</span>${b.name}<small>${got ? got.split('-').reverse().join('/') : b.desc}</small></div>`; }).join('')}</div>`;
   }
 
+  // Offline support: only on the real site (GitHub Pages) or a local test server, never inside the Claude preview frame.
+  if ('serviceWorker' in navigator && /(^|\.)github\.io$|^localhost$/.test(location.hostname)) {
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+
   window.BrownyRewards = {
     answer, finish, greeting, badgesHTML, toast,
     nie: tier => pick(NIE[tier] || NIE.hello),
